@@ -1,0 +1,155 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  --/* Config Section */
+.config-section {
+    background-color: var(--light-gray);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+  }
+
+  /* Training Section */
+  .training-section {
+    margin-bottom: 30px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  /* Examples Section */
+  .examples-section {
+    margin-bottom: 30px;
+    animation: slideUp 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  -color: #3f51b5;
+  --primary-light: #7986cb;
+  --primary-dark: #303f9f;
+  --accent-color: #ff4081;
+  --text-color: #333333;
+  --light-gray: #f5f5f5;
+  --medium-gray: #e0e0e0;
+}
+
+/* Header Styles */
+header {
+  background: linear-gradient(
+    135deg,
+    var(--primary-dark) 0%,
+    var(--primary-color) 100%
+  );
+  color: white;
+  padding: 40px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 2.5rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+header p {
+  font-size: 1.1rem;
+  margin: 10px 0 0 0;
+  opacity: 0.9;
+}
+
+/* Main Content */
+main {
+  flex: 1;
+  padding: 40px 20px;
+  background-color: white;
+}
+
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+section {
+  margin-bottom: 50px;
+}
+
+.intro-section {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.intro-section p {
+  max-width: 800px;
+  margin: 20px auto;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.intro-section h2 {
+  color: var(--primary-dark);
+  margin-bottom: 20px;
+}
+
+/* Config Section */
+.config-section {
+  background-color: var(--light-gray);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Footer */
+footer {
+  background-color: var(--primary-dark);
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  header {
+    padding: 30px 15px;
+  }
+
+  header h1 {
+    font-size: 2rem;
+  }
+
+  main {
+    padding: 30px 15px;
+  }
+
+  .intro-section p {
+    padding: 0 15px;
+  }
+}

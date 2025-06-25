@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Neural Network Demo",
+			"type": "shell",
+			"command": "cd /Users/alexfargo/neural-angular-demo/neural-angular-demo && npm run start",
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			]
+		}
+	]
+}

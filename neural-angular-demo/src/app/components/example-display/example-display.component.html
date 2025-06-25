@@ -1,0 +1,105 @@
+<div class="example-display" *ngIf="networkId">
+  <div class="example-controls">
+    <button
+      (click)="loadSuccessfulExample()"
+      [disabled]="loadingExample"
+      class="example-button success-button"
+    >
+      Show Successful Example
+    </button>
+
+    <button
+      (click)="loadUnsuccessfulExample()"
+      [disabled]="loadingExample"
+      class="example-button error-button"
+    >
+      Show Unsuccessful Example
+    </button>
+  </div>
+
+  <div *ngIf="currentExample" class="example-content">
+    <div class="example-card">
+      <div
+        class="card-header"
+        [ngClass]="{
+          success: currentExample.correct,
+          error: !currentExample.correct
+        }"
+      >
+        <h3>
+          {{
+            currentExample.correct ? "Successful" : "Unsuccessful"
+          }}
+          Classification
+        </h3>
+      </div>
+
+      <div class="card-body">
+        <div class="image-container">
+          <img
+            [src]="currentExample.image_data"
+            alt="MNIST Digit"
+            class="digit-image"
+            (error)="handleImageError($event)"
+            [ngClass]="{ 'image-load-error': !imageLoaded }"
+            crossorigin="anonymous"
+          />
+          <div class="fallback-digit" *ngIf="!imageLoaded">
+            {{ currentExample.actual_digit }}
+          </div>
+        </div>
+
+        <div class="prediction-details">
+          <div class="prediction-row">
+            <div class="label">Predicted Digit:</div>
+            <div
+              class="value"
+              [ngClass]="{
+                success: currentExample.correct,
+                error: !currentExample.correct
+              }"
+            >
+              {{ currentExample.predicted_digit }}
+            </div>
+          </div>
+
+          <div class="prediction-row">
+            <div class="label">Actual Digit:</div>
+            <div class="value">{{ currentExample.actual_digit }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="network-output">
+      <h3>Network Output</h3>
+      <p class="output-description">
+        The values below show the network's confidence (as percentages) for each
+        digit:
+      </p>
+
+      <div class="output-bars">
+        <div
+          *ngFor="let value of currentExample.network_output; let i = index"
+          class="output-bar-container"
+        >
+          <div class="digit-label">{{ i }}</div>
+          <div class="bar-container">
+            <div
+              class="bar"
+              [style.width.%]="value * 100"
+              [ngClass]="{ selected: i === currentExample.predicted_digit }"
+            ></div>
+            <span class="bar-value">{{ value * 100 | number : "1.1-1" }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loadingExample" class="loading-indicator">Loading example...</div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+</div>

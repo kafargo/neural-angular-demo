@@ -1,0 +1,81 @@
+<div class="training-section" *ngIf="networkId">
+  <div *ngIf="!trainingStarted" class="training-config">
+    <h3>Train Your Network</h3>
+    <p>Train your neural network on the MNIST dataset:</p>
+
+    <div class="training-params">
+      <div class="param-item">
+        <label>
+          <span>Epochs:</span>
+          <input type="number" [(ngModel)]="epochs" min="1" max="50" />
+        </label>
+        <span class="param-hint"
+          >Number of complete passes through the training data</span
+        >
+      </div>
+
+      <div class="param-item">
+        <label>
+          <span>Mini Batch Size:</span>
+          <input type="number" [(ngModel)]="miniBatchSize" min="1" max="100" />
+        </label>
+        <span class="param-hint">Number of examples processed together</span>
+      </div>
+
+      <div class="param-item">
+        <label>
+          <span>Learning Rate:</span>
+          <input
+            type="number"
+            [(ngModel)]="learningRate"
+            min="0.1"
+            max="10"
+            step="0.1"
+          />
+        </label>
+        <span class="param-hint">Step size for gradient descent</span>
+      </div>
+    </div>
+
+    <button (click)="startTraining()" [disabled]="loading" class="train-button">
+      {{ loading ? "Starting Training..." : "Start Training" }}
+    </button>
+  </div>
+
+  <div *ngIf="trainingStarted && !trainingComplete" class="training-progress">
+    <h3>Training in Progress</h3>
+    <div class="progress-container">
+      <div class="progress-bar" [style.width.%]="trainingProgress"></div>
+    </div>
+    <div class="progress-details">
+      <span>{{ trainingProgress }}% Complete</span>
+      <span *ngIf="currentAccuracy"
+        >Current Accuracy: {{ currentAccuracy | percent : "1.1-1" }}</span
+      >
+    </div>
+  </div>
+
+  <div *ngIf="trainingComplete" class="training-complete">
+    <h3>Training Complete!</h3>
+    <div class="training-results">
+      <div class="result-item">
+        <div class="result-label">Final Accuracy:</div>
+        <div class="result-value">{{ finalAccuracy | percent : "1.1-1" }}</div>
+      </div>
+      <div class="result-item">
+        <div class="result-label">Epochs Completed:</div>
+        <div class="result-value">{{ epochs }}</div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button (click)="showExamples()" class="test-button">
+        Test with Examples
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+</div>
