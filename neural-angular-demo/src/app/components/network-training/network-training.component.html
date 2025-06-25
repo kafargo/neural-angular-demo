@@ -1,4 +1,26 @@
 <div class="training-section" *ngIf="networkId">
+  <!-- WebSocket Connection Status -->
+  <div
+    class="websocket-status"
+    [ngClass]="{ connected: connectionStatus.connected }"
+  >
+    <span
+      *ngIf="connectionStatus.connected; else disconnected"
+      class="status-text"
+    >
+      🟢 Real-time updates active (ID:
+      {{ connectionStatus.socketId?.substring(0, 6) }})
+    </span>
+    <ng-template #disconnected>
+      <span class="status-text"
+        >🔴 Real-time updates not available, using polling</span
+      >
+      <button (click)="reconnectWebSocket()" class="btn-reconnect">
+        Reconnect
+      </button>
+    </ng-template>
+  </div>
+
   <div *ngIf="!trainingStarted" class="training-config">
     <h3>Train Your Network</h3>
     <p>Train your neural network on the MNIST dataset:</p>
@@ -47,11 +69,62 @@
     <div class="progress-container">
       <div class="progress-bar" [style.width.%]="trainingProgress"></div>
     </div>
-    <div class="progress-details">
+
+    <!-- Standard training details -->
+    <div
+      *ngIf="!currentTraining && connectionStatus.connected === false"
+      class="progress-details"
+    >
       <span>{{ trainingProgress }}% Complete</span>
       <span *ngIf="currentAccuracy"
         >Current Accuracy: {{ currentAccuracy | percent : "1.1-1" }}</span
       >
+    </div>
+
+    <!-- Enhanced WebSocket training details -->
+    <div
+      *ngIf="currentTraining && connectionStatus.connected"
+      class="enhanced-progress-details"
+    >
+      <div class="training-detail-row">
+        <span class="detail-label">Progress:</span>
+        <span class="detail-value">{{ trainingProgress }}%</span>
+      </div>
+
+      <div class="training-detail-row">
+        <span class="detail-label">Epoch:</span>
+        <span class="detail-value"
+          >{{ currentTraining.epoch }} /
+          {{ currentTraining.total_epochs }}</span
+        >
+      </div>
+
+      <div
+        class="training-detail-row"
+        *ngIf="currentTraining.accuracy !== null"
+      >
+        <span class="detail-label">Accuracy:</span>
+        <span class="detail-value"
+          >{{ (currentTraining.accuracy * 100).toFixed(2) }}%</span
+        >
+      </div>
+
+      <div
+        class="training-detail-row"
+        *ngIf="currentTraining.correct && currentTraining.total"
+      >
+        <span class="detail-label">Correct/Total:</span>
+        <span class="detail-value"
+          >{{ currentTraining.correct }} / {{ currentTraining.total }}</span
+        >
+      </div>
+
+      <div class="training-detail-row">
+        <span class="detail-label">Time (this epoch):</span>
+        <span class="detail-value"
+          >{{ currentTraining.elapsed_time.toFixed(2) }}s</span
+        >
+      </div>
     </div>
   </div>
 
