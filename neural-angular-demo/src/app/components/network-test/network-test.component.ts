@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NeuralNetworkService } from '../../services/neural-network.service';
+import { AppStateService } from '../../services/app-state.service';
 import { ExampleDisplayComponent } from '../example-display/example-display.component';
 import { NetworkExample } from '../../interfaces/neural-network.interface';
 
@@ -11,8 +12,8 @@ import { NetworkExample } from '../../interfaces/neural-network.interface';
   templateUrl: './network-test.component.html',
   styleUrls: ['./network-test.component.css']
 })
-export class NetworkTestComponent {
-  @Input() networkId = '';
+export class NetworkTestComponent implements OnInit {
+  networkId = '';
 
   currentExample: NetworkExample | null = null;
   successExamples: NetworkExample[] = [];
@@ -21,7 +22,15 @@ export class NetworkTestComponent {
   showExamples = false;
   error: string | null = null;
 
-  constructor(private neuralNetworkService: NeuralNetworkService) {}
+  constructor(
+    private neuralNetworkService: NeuralNetworkService,
+    private appState: AppStateService
+  ) {}
+
+  ngOnInit(): void {
+    // Load network ID from the state service
+    this.networkId = this.appState.networkId;
+  }
 
   loadRandomExample(): void {
     const isSuccessful = Math.random() > 0.5;

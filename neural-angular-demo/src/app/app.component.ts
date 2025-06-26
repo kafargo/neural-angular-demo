@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, RouterOutlet } from '@angular/router';
 import { NeuralNetworkService } from './services/neural-network.service';
+import { AppStateService } from './services/app-state.service';
 
 // Import new components
 import { NavigationComponent } from './components/navigation/navigation.component';
-import { LearnComponent } from './components/learn/learn.component';
-import { NetworkConfigComponent } from './components/network-config/network-config.component';
-import { NetworkTrainingComponent } from './components/network-training/network-training.component';
-import { NetworkTestComponent } from './components/network-test/network-test.component';
 
 // Import interfaces
 import { AppSection, NetworkConfig, TrainingConfig } from './interfaces/neural-network.interface';
@@ -17,40 +15,19 @@ import { AppSection, NetworkConfig, TrainingConfig } from './interfaces/neural-n
   standalone: true,
   imports: [
     CommonModule,
-    NavigationComponent,
-    LearnComponent,
-    NetworkConfigComponent,
-    NetworkTrainingComponent,
-    NetworkTestComponent
+    RouterOutlet,
+    NavigationComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
   title = 'Neural Network Demo';
-  activeSection: AppSection = 'learn';
-  
-  // Network state
-  networkId = '';
-  networkConfig: NetworkConfig = {
-    hiddenLayer1: 128,
-    hiddenLayer2: 64,
-    useSecondLayer: true,
-    layerSizes: [784, 128, 64, 10]
-  };
-  
-  // Training state
-  trainingConfig: TrainingConfig = {
-    epochs: 10,
-    miniBatchSize: 10,
-    learningRate: 3.0
-  };
-  
-  trainingComplete = false;
-  finalAccuracy: number | null = null;
 
   constructor(
-    private neuralNetworkService: NeuralNetworkService
+    private router: Router,
+    private neuralNetworkService: NeuralNetworkService,
+    public appState: AppStateService
   ) {}
 
   ngOnInit(): void {
@@ -59,37 +36,41 @@ export class AppComponent implements OnInit {
 
   // Navigation Methods
   onSectionChange(section: AppSection): void {
-    this.activeSection = section;
+    this.appState.setActiveSection(section);
+    this.router.navigate([`/${section}`]);
   }
 
   // Network configuration events
   onNetworkConfigChange(config: NetworkConfig): void {
-    this.networkConfig = config;
+    this.appState.setNetworkConfig(config);
   }
 
   onNetworkCreated(networkId: string): void {
-    this.networkId = networkId;
+    this.appState.setNetworkId(networkId);
   }
 
   onContinueToCreate(): void {
-    this.activeSection = 'create';
+    this.appState.setActiveSection('create');
+    this.router.navigate(['/create']);
   }
 
   onContinueToTrain(): void {
-    this.activeSection = 'train';
+    this.appState.setActiveSection('train');
+    this.router.navigate(['/train']);
   }
 
   // Training events
   onTrainingConfigChange(config: TrainingConfig): void {
-    this.trainingConfig = config;
+    this.appState.setTrainingConfig(config);
   }
 
   onTrainingComplete(accuracy: number): void {
-    this.trainingComplete = true;
-    this.finalAccuracy = accuracy;
+    this.appState.setTrainingComplete(true);
+    this.appState.setFinalAccuracy(accuracy);
   }
 
   onContinueToTest(): void {
-    this.activeSection = 'test';
+    this.appState.setActiveSection('test');
+    this.router.navigate(['/test']);
   }
 }

@@ -1,9 +1,9 @@
 <header>
   <div class="header-content">
     <app-navigation
-      [activeSection]="activeSection"
-      [networkId]="networkId"
-      [trainingComplete]="trainingComplete"
+      [activeSection]="appState.activeSection"
+      [networkId]="appState.networkId"
+      [trainingComplete]="appState.trainingComplete"
       (sectionChange)="onSectionChange($event)"
     >
     </app-navigation>
@@ -13,36 +13,6 @@
 <div class="app-layout">
   <!-- Main Content Area -->
   <main class="main-content">
-    <!-- Learn About Neural Nets Section -->
-    <app-learn
-      *ngIf="activeSection === 'learn'"
-      (continueToCreate)="onContinueToCreate()"
-    >
-    </app-learn>
-
-    <!-- Create Network Section -->
-    <app-network-config
-      *ngIf="activeSection === 'create'"
-      [config]="networkConfig"
-      (configChange)="onNetworkConfigChange($event)"
-      (networkCreated)="onNetworkCreated($event)"
-      (continueToTrain)="onContinueToTrain()"
-    >
-    </app-network-config>
-
-    <!-- Train Network Section -->
-    <app-network-training
-      *ngIf="activeSection === 'train'"
-      [networkId]="networkId"
-      [trainingConfig]="trainingConfig"
-      (trainingConfigChange)="onTrainingConfigChange($event)"
-      (trainingComplete)="onTrainingComplete($event)"
-      (continueToTest)="onContinueToTest()"
-    >
-    </app-network-training>
-
-    <!-- Test Network Section -->
-    <app-network-test *ngIf="activeSection === 'test'" [networkId]="networkId">
-    </app-network-test>
+    <router-outlet></router-outlet>
   </main>
 </div>

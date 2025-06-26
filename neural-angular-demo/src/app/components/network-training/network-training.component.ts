@@ -1,7 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NeuralNetworkService } from '../../services/neural-network.service';
+import { AppStateService } from '../../services/app-state.service';
 import { TrainingProgressComponent } from '../training-progress/training-progress.component';
 import { TrainingConfig, TrainingUpdate } from '../../interfaces/neural-network.interface';
 
@@ -12,17 +14,13 @@ import { TrainingConfig, TrainingUpdate } from '../../interfaces/neural-network.
   templateUrl: './network-training.component.html',
   styleUrls: ['./network-training.component.css']
 })
-export class NetworkTrainingComponent {
-  @Input() networkId = '';
-  @Input() trainingConfig: TrainingConfig = {
+export class NetworkTrainingComponent implements OnInit {
+  networkId = '';
+  trainingConfig: TrainingConfig = {
     epochs: 10,
     miniBatchSize: 10,
     learningRate: 3.0
   };
-
-  @Output() trainingConfigChange = new EventEmitter<TrainingConfig>();
-  @Output() trainingComplete = new EventEmitter<number>();
-  @Output() continueToTest = new EventEmitter<void>();
 
   trainingLoading = false;
   trainingStarted = false;
@@ -32,10 +30,21 @@ export class NetworkTrainingComponent {
   currentTraining: TrainingUpdate | null = null;
   error: string | null = null;
 
-  constructor(private neuralNetworkService: NeuralNetworkService) {}
+  constructor(
+    private router: Router,
+    private neuralNetworkService: NeuralNetworkService,
+    private appState: AppStateService
+  ) {}
+
+  ngOnInit(): void {
+    // Load state from the service
+    this.networkId = this.appState.networkId;
+    this.trainingConfig = { ...this.appState.trainingConfig };
+    this.finalAccuracy = this.appState.finalAccuracy;
+  }
 
   onConfigChange(): void {
-    this.trainingConfigChange.emit(this.trainingConfig);
+    this.appState.setTrainingConfig(this.trainingConfig);
   }
 
   startTraining(): void {
@@ -108,10 +117,12 @@ export class NetworkTrainingComponent {
     this.trainingStarted = false;
     this.isTraining = false;
     this.finalAccuracy = this.currentTraining?.accuracy || 0;
-    this.trainingComplete.emit(this.finalAccuracy);
+    this.appState.setTrainingComplete(true);
+    this.appState.setFinalAccuracy(this.finalAccuracy);
   }
 
   onContinueToTest(): void {
-    this.continueToTest.emit();
+    this.appState.setActiveSection('test');
+    this.router.navigate(['/test']);
   }
 }

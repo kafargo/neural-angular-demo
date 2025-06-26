@@ -1,5 +1,7 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AppStateService } from '../../services/app-state.service';
 
 @Component({
   selector: 'app-learn',
@@ -9,9 +11,13 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./learn.component.css']
 })
 export class LearnComponent {
-  @Output() continueToCreate = new EventEmitter<void>();
+  constructor(
+    private router: Router,
+    private appState: AppStateService
+  ) {}
 
   onContinue(): void {
-    this.continueToCreate.emit();
+    this.appState.setActiveSection('create');
+    this.router.navigate(['/create']);
   }
 }
