@@ -384,6 +384,45 @@
               </div>
             </div>
           </div>
+
+          <!-- Confidence Breakdown for Random Test Example -->
+          <div
+            class="confidence-breakdown"
+            *ngIf="currentExample.network_output"
+          >
+            <h4>Random Test Example - All Digit Predictions:</h4>
+            <div class="confidence-bars">
+              <div
+                class="confidence-bar"
+                *ngFor="
+                  let confidence of currentExample.network_output;
+                  let i = index
+                "
+                [class.predicted]="i === currentExample.predicted_digit"
+                [class.actual]="i === currentExample.actual_digit"
+              >
+                <div class="digit-label">{{ i }}</div>
+                <div class="bar-container">
+                  <div
+                    class="bar-fill"
+                    [style.width.%]="confidence * 100"
+                    [class.high-confidence]="confidence > 0.5"
+                    [class.medium-confidence]="
+                      confidence > 0.2 && confidence <= 0.5
+                    "
+                    [class.low-confidence]="confidence <= 0.2"
+                  ></div>
+                </div>
+                <div class="confidence-value">
+                  {{ (confidence * 100).toFixed(1) }}%
+                </div>
+              </div>
+            </div>
+            <div class="legend">
+              <span class="legend-item predicted">■ Predicted</span>
+              <span class="legend-item actual">■ Actual</span>
+            </div>
+          </div>
         </div>
 
         <!-- Success/Failure Examples Section -->
@@ -394,18 +433,66 @@
               <h4>Successful Classifications</h4>
               <div class="example-list">
                 <div
-                  class="mini-example"
-                  *ngFor="let example of successExamples"
+                  class="detailed-example"
+                  *ngFor="let example of successExamples; let i = index"
                 >
-                  <img
-                    [src]="sanitizeImageData(example.image_data)"
-                    alt="Success example"
-                  />
-                  <div class="mini-label">
-                    {{ example.actual_digit }} → {{ example.predicted_digit }}
-                    <span class="confidence"
-                      >({{ getMaxConfidence(example.network_output) }}%)</span
-                    >
+                  <div class="example-header">
+                    <img
+                      [src]="sanitizeImageData(example.image_data)"
+                      alt="Success example"
+                      class="example-image-small"
+                    />
+                    <div class="example-info">
+                      <div class="example-prediction">
+                        {{ example.actual_digit }} →
+                        {{ example.predicted_digit }}
+                        <span class="confidence success"
+                          >({{
+                            getMaxConfidence(example.network_output)
+                          }}%)</span
+                        >
+                      </div>
+                      <div class="example-status">✓ Correct Prediction</div>
+                    </div>
+                  </div>
+
+                  <!-- Confidence Breakdown for this Success Example -->
+                  <div
+                    class="confidence-breakdown mini"
+                    *ngIf="example.network_output"
+                  >
+                    <h5>
+                      Success Example #{{ i + 1 }} - All Digit Predictions:
+                    </h5>
+                    <div class="confidence-bars mini">
+                      <div
+                        class="confidence-bar mini"
+                        *ngFor="
+                          let confidence of example.network_output;
+                          let digitIndex = index
+                        "
+                        [class.predicted]="
+                          digitIndex === example.predicted_digit
+                        "
+                        [class.actual]="digitIndex === example.actual_digit"
+                      >
+                        <div class="digit-label">{{ digitIndex }}</div>
+                        <div class="bar-container">
+                          <div
+                            class="bar-fill"
+                            [style.width.%]="confidence * 100"
+                            [class.high-confidence]="confidence > 0.5"
+                            [class.medium-confidence]="
+                              confidence > 0.2 && confidence <= 0.5
+                            "
+                            [class.low-confidence]="confidence <= 0.2"
+                          ></div>
+                        </div>
+                        <div class="confidence-value">
+                          {{ (confidence * 100).toFixed(0) }}%
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -416,18 +503,68 @@
               <h4>Failed Classifications</h4>
               <div class="example-list">
                 <div
-                  class="mini-example"
-                  *ngFor="let example of failureExamples"
+                  class="detailed-example"
+                  *ngFor="let example of failureExamples; let i = index"
                 >
-                  <img
-                    [src]="sanitizeImageData(example.image_data)"
-                    alt="Failure example"
-                  />
-                  <div class="mini-label error">
-                    {{ example.actual_digit }} → {{ example.predicted_digit }}
-                    <span class="confidence"
-                      >({{ getMaxConfidence(example.network_output) }}%)</span
-                    >
+                  <div class="example-header">
+                    <img
+                      [src]="sanitizeImageData(example.image_data)"
+                      alt="Failure example"
+                      class="example-image-small"
+                    />
+                    <div class="example-info">
+                      <div class="example-prediction error">
+                        {{ example.actual_digit }} →
+                        {{ example.predicted_digit }}
+                        <span class="confidence error"
+                          >({{
+                            getMaxConfidence(example.network_output)
+                          }}%)</span
+                        >
+                      </div>
+                      <div class="example-status error">
+                        ✗ Incorrect Prediction
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Confidence Breakdown for this Failure Example -->
+                  <div
+                    class="confidence-breakdown mini"
+                    *ngIf="example.network_output"
+                  >
+                    <h5>
+                      Failure Example #{{ i + 1 }} - All Digit Predictions:
+                    </h5>
+                    <div class="confidence-bars mini">
+                      <div
+                        class="confidence-bar mini"
+                        *ngFor="
+                          let confidence of example.network_output;
+                          let digitIndex = index
+                        "
+                        [class.predicted]="
+                          digitIndex === example.predicted_digit
+                        "
+                        [class.actual]="digitIndex === example.actual_digit"
+                      >
+                        <div class="digit-label">{{ digitIndex }}</div>
+                        <div class="bar-container">
+                          <div
+                            class="bar-fill"
+                            [style.width.%]="confidence * 100"
+                            [class.high-confidence]="confidence > 0.5"
+                            [class.medium-confidence]="
+                              confidence > 0.2 && confidence <= 0.5
+                            "
+                            [class.low-confidence]="confidence <= 0.2"
+                          ></div>
+                        </div>
+                        <div class="confidence-value">
+                          {{ (confidence * 100).toFixed(0) }}%
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

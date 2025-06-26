@@ -649,9 +649,9 @@ header p {
 }
 
 .example-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .mini-example {
@@ -711,6 +711,284 @@ header p {
 
 .continue-button:hover {
   background: var(--primary-dark);
+}
+
+/* Confidence Breakdown Styles */
+.confidence-breakdown {
+  margin-top: 30px;
+  padding: 20px;
+  background: var(--light-gray);
+  border-radius: 12px;
+  border: 1px solid var(--medium-gray);
+}
+
+.confidence-breakdown h4 {
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.confidence-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.confidence-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.confidence-bar.predicted {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(255, 64, 129, 0.2);
+}
+
+.confidence-bar.actual {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.confidence-bar.predicted.actual {
+  border-color: #ff9800;
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+}
+
+.digit-label {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 8px;
+}
+
+.bar-container {
+  width: 100%;
+  height: 20px;
+  background: var(--medium-gray);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 0.6s ease, background-color 0.3s ease;
+  border-radius: 10px;
+}
+
+.bar-fill.high-confidence {
+  background: linear-gradient(90deg, #4caf50, #66bb6a);
+}
+
+.bar-fill.medium-confidence {
+  background: linear-gradient(90deg, #ff9800, #ffb74d);
+}
+
+.bar-fill.low-confidence {
+  background: linear-gradient(90deg, #e0e0e0, #bdbdbd);
+}
+
+.confidence-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--medium-gray);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.legend-item.predicted {
+  color: var(--accent-color);
+}
+
+.legend-item.actual {
+  color: #4caf50;
+}
+
+/* Detailed Example Styles */
+.detailed-example {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--medium-gray);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.example-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.example-image-small {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  border: 2px solid var(--medium-gray);
+}
+
+.example-info {
+  flex: 1;
+}
+
+.example-prediction {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.example-prediction.error {
+  color: var(--accent-color);
+}
+
+.example-status {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.example-status.error {
+  color: var(--accent-color);
+}
+
+.confidence.success {
+  color: #4caf50;
+}
+
+.confidence.error {
+  color: var(--accent-color);
+}
+
+/* Mini Confidence Breakdown */
+.confidence-breakdown.mini {
+  margin-top: 15px;
+  padding: 15px;
+  background: var(--light-gray);
+  border-radius: 8px;
+  border: 1px solid var(--medium-gray);
+}
+
+.confidence-breakdown.mini h5 {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.confidence-bars.mini {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.confidence-bar.mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  background: white;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.confidence-bar.mini .digit-label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 6px;
+}
+
+.confidence-bar.mini .bar-container {
+  width: 100%;
+  height: 12px;
+  background: var(--medium-gray);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.confidence-bar.mini .confidence-value {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* Responsive adjustments for confidence breakdown */
+@media (max-width: 768px) {
+  .confidence-bars {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .confidence-bar {
+    padding: 8px 4px;
+  }
+
+  .digit-label {
+    font-size: 1.2rem;
+  }
+
+  .bar-container {
+    height: 16px;
+  }
+
+  .confidence-value {
+    font-size: 0.8rem;
+  }
+
+  .confidence-bars.mini {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  .confidence-bar.mini {
+    padding: 6px 2px;
+  }
+
+  .confidence-bar.mini .digit-label {
+    font-size: 0.9rem;
+  }
+
+  .confidence-bar.mini .bar-container {
+    height: 10px;
+  }
+
+  .confidence-bar.mini .confidence-value {
+    font-size: 0.6rem;
+  }
+
+  .example-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .detailed-example {
+    padding: 15px;
+  }
 }
 
 /* Responsive Design */
