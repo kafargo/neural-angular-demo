@@ -4,7 +4,9 @@
   "description": "Neural Network Angular Demo - Railway Deployment Root",
   "scripts": {
     "build": "cd neural-angular-demo && npm ci && npm run build:prod",
+    "postbuild": "echo 'Build completed' && ls -la neural-angular-demo/dist/",
     "start": "cd neural-angular-demo && npm run start:prod",
+    "prestart": "echo 'Starting app...' && echo 'PORT:' $PORT && echo 'NODE_ENV:' $NODE_ENV",
     "install-deps": "cd neural-angular-demo && npm ci"
   },
   "engines": {
