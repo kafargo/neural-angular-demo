@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable, BehaviorSubject } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface TrainingUpdate {
   job_id: string;
@@ -30,7 +31,7 @@ export class TrainingWebSocketService implements OnDestroy {
   private trainingUpdates = new BehaviorSubject<TrainingUpdate | null>(null);
   
   // Production server URL based on the documentation
-  private serverUrl = 'https://neural-network-intro-production.up.railway.app';
+  private serverUrl = environment.websocketUrl;
 
   constructor() {
     this.initializeConnection();

@@ -62,6 +62,32 @@ The application demonstrates key concepts including:
 4. **Open your browser**
    Navigate to `http://localhost:4200/`
 
+## 🚀 Railway Deployment
+
+This application is configured for easy deployment to Railway. For detailed deployment instructions, see the [Railway Deployment Guide](RAILWAY_DEPLOYMENT.md).
+
+### Quick Deploy to Railway
+
+1. **Push to GitHub**
+
+   ```bash
+   git add .
+   git commit -m "Deploy to Railway"
+   git push origin main
+   ```
+
+2. **Deploy on Railway**
+   - Go to [railway.app](https://railway.app)
+   - Connect your GitHub repository
+   - Railway will automatically deploy using the included configuration
+
+The application includes:
+
+- Pre-configured `railway.json` deployment settings
+- Express server for serving the built Angular app
+- Environment-specific configurations
+- Production build optimizations
+
 ## 🏗️ Architecture
 
 ### Frontend (Angular)
