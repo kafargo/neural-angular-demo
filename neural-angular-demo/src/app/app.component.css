@@ -22,6 +22,9 @@ header {
   color: white;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .header-content {
@@ -634,12 +637,20 @@ header p {
   border-radius: 8px;
   padding: 30px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .examples-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-height: fit-content;
+}
+
+.example-category {
+  min-width: 0; /* Prevent grid items from overflowing */
+  overflow: hidden; /* Ensure content doesn't overflow */
 }
 
 .example-category h4 {
@@ -833,6 +844,8 @@ header p {
   margin-bottom: 20px;
   border: 1px solid var(--medium-gray);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 0;
+  word-wrap: break-word;
 }
 
 .example-header {
@@ -901,6 +914,7 @@ header p {
   grid-template-columns: repeat(10, 1fr);
   gap: 8px;
   margin-bottom: 15px;
+  min-width: 0;
 }
 
 .confidence-bar.mini {
@@ -912,6 +926,7 @@ header p {
   border-radius: 6px;
   border: 2px solid transparent;
   transition: all 0.3s ease;
+  min-width: 0;
 }
 
 .confidence-bar.mini .digit-label {
@@ -931,7 +946,7 @@ header p {
 }
 
 .confidence-bar.mini .confidence-value {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-color);
 }
@@ -958,7 +973,6 @@ header p {
   .confidence-value {
     font-size: 0.8rem;
   }
-
   .confidence-bars.mini {
     grid-template-columns: repeat(5, 1fr);
     gap: 6px;
@@ -977,7 +991,7 @@ header p {
   }
 
   .confidence-bar.mini .confidence-value {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
   }
 
   .example-header {
@@ -988,6 +1002,31 @@ header p {
 
   .detailed-example {
     padding: 15px;
+  }
+}
+
+/* Medium screen adjustments (tablets and smaller desktops) */
+@media (max-width: 1200px) {
+  .main-content {
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .examples-section {
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .examples-grid {
+    gap: 30px;
+  }
+
+  .confidence-bars.mini {
+    gap: 6px;
+  }
+
+  .confidence-bar.mini {
+    padding: 6px 3px;
   }
 }
 
@@ -1020,7 +1059,7 @@ header p {
   }
 
   .examples-grid {
-    grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .param-grid {
