@@ -1,0 +1,88 @@
+<section class="test-section">
+  <div class="test-header">
+    <h2>Test the Network</h2>
+    <p>Try your trained network with test examples</p>
+  </div>
+
+  <div class="test-content">
+    <!-- Test Controls -->
+    <div class="test-controls">
+      <button
+        class="test-button primary"
+        (click)="loadRandomExample()"
+        [disabled]="loadingExample"
+      >
+        {{ loadingExample ? "Loading..." : "Get Random Test Example" }}
+      </button>
+
+      <button
+        class="test-button success"
+        (click)="loadSuccessfulExample()"
+        [disabled]="loadingExample"
+      >
+        Load Successful Example
+      </button>
+
+      <button
+        class="test-button error"
+        (click)="loadUnsuccessfulExample()"
+        [disabled]="loadingExample"
+      >
+        Load Failed Example
+      </button>
+
+      <button class="test-button secondary" (click)="generateExamples()">
+        Generate Success/Failure Examples
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="error">
+      {{ error }}
+    </div>
+
+    <!-- Current Example Display -->
+    <app-example-display
+      *ngIf="currentExample"
+      [example]="currentExample"
+      [showConfidenceBreakdown]="true"
+      [isCompact]="false"
+    >
+    </app-example-display>
+
+    <!-- Success/Failure Examples Grid -->
+    <div class="examples-section" *ngIf="showExamples">
+      <h3>Example Classifications</h3>
+
+      <div class="examples-grid">
+        <!-- Success Examples -->
+        <div class="example-category">
+          <h4 class="success-header">✓ Successful Classifications</h4>
+          <div class="example-list">
+            <app-example-display
+              *ngFor="let example of successExamples; let i = index"
+              [example]="example"
+              [showConfidenceBreakdown]="true"
+              [isCompact]="true"
+            >
+            </app-example-display>
+          </div>
+        </div>
+
+        <!-- Failure Examples -->
+        <div class="example-category">
+          <h4 class="error-header">✗ Failed Classifications</h4>
+          <div class="example-list">
+            <app-example-display
+              *ngFor="let example of failureExamples; let i = index"
+              [example]="example"
+              [showConfidenceBreakdown]="true"
+              [isCompact]="true"
+            >
+            </app-example-display>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,40 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
-import { DomSanitizer } from '@angular/platform-browser';
 import { ExampleDisplayComponent } from './example-display.component';
-import { NeuralNetworkService } from '../../services/neural-network.service';
+import { NetworkExample } from '../../interfaces/neural-network.interface';
 
 describe('ExampleDisplayComponent', () => {
   let component: ExampleDisplayComponent;
   let fixture: ComponentFixture<ExampleDisplayComponent>;
-  let neuralNetworkServiceSpy: jasmine.SpyObj<NeuralNetworkService>;
-  let sanitizerSpy: jasmine.SpyObj<DomSanitizer>;
 
   beforeEach(async () => {
-    const networkSpy = jasmine.createSpyObj('NeuralNetworkService', [
-      'getSuccessfulExample', 
-      'getUnsuccessfulExample'
-    ]);
-    
-    const domSpy = jasmine.createSpyObj('DomSanitizer', [
-      'bypassSecurityTrustUrl'
-    ]);
-    
-    domSpy.bypassSecurityTrustUrl.and.callFake((url: string) => url);
-    
     await TestBed.configureTestingModule({
-      providers: [
-        { provide: NeuralNetworkService, useValue: networkSpy },
-        { provide: DomSanitizer, useValue: domSpy }
-      ]
+      imports: [ExampleDisplayComponent]
     }).compileComponents();
 
-    neuralNetworkServiceSpy = TestBed.inject(NeuralNetworkService) as jasmine.SpyObj<NeuralNetworkService>;
-    sanitizerSpy = TestBed.inject(DomSanitizer) as jasmine.SpyObj<DomSanitizer>;
-    
     fixture = TestBed.createComponent(ExampleDisplayComponent);
     component = fixture.componentInstance;
-    component.networkId = 'test-network-id';
     fixture.detectChanges();
   });
 
@@ -42,59 +20,63 @@ describe('ExampleDisplayComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load a successful example', () => {
-    const mockResponse = {
-      example_index: 123,
-      predicted_digit: 7,
-      actual_digit: 7,
-      image_data: 'data:image/png;base64,testbase64data',
-      network_output: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.3, 0.0, 0.0]
-    };
-    
-    neuralNetworkServiceSpy.getSuccessfulExample.and.returnValue(of(mockResponse));
-    
-    component.loadSuccessfulExample();
-    
-    expect(neuralNetworkServiceSpy.getSuccessfulExample).toHaveBeenCalledWith('test-network-id');
-    expect(component.loadingExample).toBe(false);
-    expect(component.currentExample?.predicted_digit).toBe(7);
-    expect(component.currentExample?.actual_digit).toBe(7);
-    expect(component.currentExample?.correct).toBe(true);
+  it('should return 0 confidence when no example', () => {
+    component.example = null;
+    expect(component.getMaxConfidence()).toBe(0);
   });
 
-  it('should load an unsuccessful example', () => {
-    const mockResponse = {
-      example_index: 456,
-      predicted_digit: 3,
-      actual_digit: 5,
-      image_data: 'data:image/png;base64,testbase64data',
-      network_output: [0.1, 0.1, 0.1, 0.3, 0.1, 0.2, 0.1, 0.0, 0.0, 0.0]
+  it('should calculate max confidence correctly', () => {
+    const mockExample: NetworkExample = {
+      image_data: 'test-data',
+      actual_digit: 7,
+      predicted_digit: 7,
+      correct: true,
+      network_output: [0.1, 0.2, 0.8, 0.3, 0.1, 0.0, 0.0, 0.9, 0.2, 0.1]
     };
     
-    neuralNetworkServiceSpy.getUnsuccessfulExample.and.returnValue(of(mockResponse));
+    component.example = mockExample;
+    expect(component.getMaxConfidence()).toBe(90); // 0.9 * 100
+  });
+
+  it('should detect correct predictions', () => {
+    const mockExample: NetworkExample = {
+      image_data: 'test-data',
+      actual_digit: 7,
+      predicted_digit: 7,
+      correct: true,
+      network_output: [0.1, 0.2, 0.8, 0.3, 0.1, 0.0, 0.0, 0.9, 0.2, 0.1]
+    };
     
-    component.loadUnsuccessfulExample();
+    component.example = mockExample;
+    expect(component.isCorrectPrediction()).toBe(true);
+  });
+
+  it('should detect incorrect predictions', () => {
+    const mockExample: NetworkExample = {
+      image_data: 'test-data',
+      actual_digit: 7,
+      predicted_digit: 4,
+      correct: false,
+      network_output: [0.1, 0.2, 0.8, 0.3, 0.9, 0.0, 0.0, 0.3, 0.2, 0.1]
+    };
     
-    expect(neuralNetworkServiceSpy.getUnsuccessfulExample).toHaveBeenCalledWith('test-network-id');
-    expect(component.loadingExample).toBe(false);
-    expect(component.currentExample?.predicted_digit).toBe(3);
-    expect(component.currentExample?.actual_digit).toBe(5);
-    expect(component.currentExample?.correct).toBe(false);
+    component.example = mockExample;
+    expect(component.isCorrectPrediction()).toBe(false);
   });
 
   it('should handle image error', () => {
-    component.currentExample = {
-      example_index: 123,
-      predicted_digit: 7,
-      actual_digit: 7,
-      image_data: 'invalid-data',
-      originalImageData: 'base64data',
-      network_output: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.3, 0.0, 0.0],
-      correct: true
-    };
+    const mockEvent = { target: { src: 'test-src' } };
+    spyOn(console, 'error');
     
-    component.handleImageError({});
+    component.handleImageError(mockEvent);
     
+    expect(console.error).toHaveBeenCalled();
     expect(component.imageLoaded).toBe(false);
+  });
+
+  it('should sanitize image data correctly', () => {
+    const dataUri = 'data:image/png;base64,test-data';
+    const result = component.sanitizeImageData(dataUri);
+    expect(result).toBeDefined();
   });
 });

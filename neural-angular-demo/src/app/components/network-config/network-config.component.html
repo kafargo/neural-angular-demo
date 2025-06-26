@@ -1,106 +1,105 @@
-<div class="network-config">
-  <h2>Configure Neural Network</h2>
-  <p>
-    This demo allows you to create a neural network for MNIST digit
-    classification. The network has 784 input nodes (28x28 pixel images) and 10
-    output nodes (digits 0-9).
-  </p>
+<section class="config-section">
+  <div class="config-header">
+    <h2>Create a Network</h2>
+    <p>Configure your neural network architecture</p>
+  </div>
 
-  <div class="layer-config">
-    <div class="layer-intro">
-      <h3>Hidden Layers Configuration</h3>
-      <p>Configure up to two hidden layers for your neural network:</p>
+  <div class="config-content">
+    <div class="config-panel">
+      <h3>Configure Network Architecture</h3>
+
+      <div class="layer-config">
+        <div class="layer-item">
+          <label>
+            <span>Hidden Layer 1 Size:</span>
+            <input
+              type="number"
+              [(ngModel)]="config.hiddenLayer1"
+              min="1"
+              max="1000"
+              (change)="onConfigChange()"
+            />
+          </label>
+          <small class="help-text"
+            >Number of neurons in the first hidden layer (1-1000)</small
+          >
+        </div>
+
+        <div class="layer-item">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="config.useSecondLayer"
+              (change)="onConfigChange()"
+            />
+            <span>Use Second Hidden Layer</span>
+          </label>
+          <small class="help-text"
+            >Add an additional processing layer for more complex patterns</small
+          >
+        </div>
+
+        <div class="layer-item" *ngIf="config.useSecondLayer">
+          <label>
+            <span>Hidden Layer 2 Size:</span>
+            <input
+              type="number"
+              [(ngModel)]="config.hiddenLayer2"
+              min="1"
+              max="1000"
+              (change)="onConfigChange()"
+            />
+          </label>
+          <small class="help-text"
+            >Number of neurons in the second hidden layer (1-1000)</small
+          >
+        </div>
+      </div>
+
+      <div class="network-preview">
+        <h4>Network Structure Preview:</h4>
+        <div class="layer-preview">
+          <div class="layer-block input">
+            <span class="layer-label">Input</span>
+            <span class="layer-size">784</span>
+          </div>
+
+          <div class="arrow">→</div>
+
+          <div class="layer-block hidden">
+            <span class="layer-label">Hidden 1</span>
+            <span class="layer-size">{{ config.hiddenLayer1 }}</span>
+          </div>
+
+          <div class="arrow" *ngIf="config.useSecondLayer">→</div>
+
+          <div class="layer-block hidden" *ngIf="config.useSecondLayer">
+            <span class="layer-label">Hidden 2</span>
+            <span class="layer-size">{{ config.hiddenLayer2 }}</span>
+          </div>
+
+          <div class="arrow">→</div>
+
+          <div class="layer-block output">
+            <span class="layer-label">Output</span>
+            <span class="layer-size">10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button
+          class="create-network-button"
+          (click)="createNetwork()"
+          [disabled]="loading"
+        >
+          {{ loading ? "Creating..." : "Create Network" }}
+        </button>
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        {{ error }}
+      </div>
     </div>
-
-    <div class="layer-controls">
-      <div class="layer-item">
-        <label>
-          <span>Hidden Layer 1:</span>
-          <input
-            type="number"
-            [(ngModel)]="hiddenLayer1"
-            min="1"
-            max="1000"
-            (change)="previewNetworkStructure()"
-          />
-        </label>
-      </div>
-
-      <div class="layer-checkbox">
-        <label>
-          <input
-            type="checkbox"
-            [(ngModel)]="useSecondLayer"
-            (change)="previewNetworkStructure()"
-          />
-          Add second hidden layer
-        </label>
-      </div>
-
-      <div *ngIf="useSecondLayer" class="layer-item">
-        <label>
-          <span>Hidden Layer 2:</span>
-          <input
-            type="number"
-            [(ngModel)]="hiddenLayer2"
-            min="1"
-            max="1000"
-            (change)="previewNetworkStructure()"
-          />
-        </label>
-      </div>
-    </div>
   </div>
-
-  <div class="network-summary">
-    <h3>Network Architecture</h3>
-    <div class="network-structure">
-      <div class="layer input-layer">
-        <h4>Input Layer</h4>
-        <div class="nodes">784 nodes</div>
-        <p>MNIST images (28×28 pixels)</p>
-      </div>
-
-      <div class="arrow">→</div>
-
-      <div class="layer hidden-layer">
-        <h4>Hidden Layer 1</h4>
-        <div class="nodes">{{ hiddenLayer1 }} nodes</div>
-      </div>
-
-      <div class="arrow" *ngIf="useSecondLayer">→</div>
-
-      <div class="layer hidden-layer" *ngIf="useSecondLayer">
-        <h4>Hidden Layer 2</h4>
-        <div class="nodes">{{ hiddenLayer2 }} nodes</div>
-      </div>
-
-      <div class="arrow">→</div>
-
-      <div class="layer output-layer">
-        <h4>Output Layer</h4>
-        <div class="nodes">10 nodes</div>
-        <p>Digits 0-9</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="action-buttons">
-    <button
-      (click)="createNetwork()"
-      [disabled]="loading"
-      class="create-button"
-    >
-      {{ loading ? "Creating..." : "Create Network" }}
-    </button>
-  </div>
-
-  <div *ngIf="error" class="error-message">
-    {{ error }}
-  </div>
-
-  <div *ngIf="isNetworkCreated" class="success-message">
-    <p>Network created successfully!</p>
-    <p>Network ID: {{ networkId }}</p>
-  </div>
-</div>
+</section>
