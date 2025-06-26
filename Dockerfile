@@ -4,17 +4,17 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy root package.json
 COPY package*.json ./
 
+# Copy the Angular app directory
+COPY neural-angular-demo/ ./neural-angular-demo/
+
+# Set working directory to the Angular app
+WORKDIR /app/neural-angular-demo
+
 # Install dependencies
-RUN npm ci --only=production
-
-# Copy Angular CLI as it's needed for build
-RUN npm install -g @angular/cli@19.2.7
-
-# Copy source code
-COPY . .
+RUN npm ci
 
 # Build the Angular app for production
 RUN npm run build:prod

@@ -2,36 +2,43 @@
 
 This document summarizes all the changes made to prepare the Neural Network Angular Demo for Railway deployment.
 
+## Project Structure Solution
+
+**Issue**: Railway was failing to build because it couldn't find `package.json` in the root directory. The Angular application is located in the `neural-angular-demo/` subdirectory.
+
+**Solution**: Created a root-level `package.json` that delegates build and start commands to the subdirectory, allowing Railway to detect and build the project correctly.
+
 ## Files Added
 
-### 1. Railway Configuration
+### 1. Root-Level Railway Configuration
 
+- **`package.json`** - Root package.json with delegation scripts
 - **`railway.json`** - Railway-specific deployment configuration
 - **`Procfile`** - Process configuration for Railway
 - **`Dockerfile`** - Docker configuration (alternative deployment method)
 
-### 2. Server Configuration
+### 2. Server Configuration (in neural-angular-demo/ subdirectory)
 
-- **`server.js`** - Express server to serve the built Angular application
+- **`neural-angular-demo/server.js`** - Express server to serve the built Angular application
   - Serves static files from `dist/neural-angular-demo`
   - Handles Angular routing (SPA fallback)
   - Includes health check endpoint at `/health`
 
-### 3. Environment Configuration
+### 3. Environment Configuration (in neural-angular-demo/src/environments/)
 
-- **`src/environments/environment.ts`** - Development environment configuration
-- **`src/environments/environment.prod.ts`** - Production environment configuration
+- **`neural-angular-demo/src/environments/environment.ts`** - Development environment configuration
+- **`neural-angular-demo/src/environments/environment.prod.ts`** - Production environment configuration
 
 ### 4. Documentation
 
 - **`RAILWAY_DEPLOYMENT.md`** - Comprehensive deployment guide for Railway
-- **`test-production.sh`** - Script to test production build locally
+- **`neural-angular-demo/test-production.sh`** - Script to test production build locally
 
 ## Files Modified
 
 ### 1. Package Configuration
 
-- **`package.json`**
+- **`neural-angular-demo/package.json`**
   - Added Express dependency for serving the app
   - Moved Angular CLI and compiler to dependencies (needed for Railway build)
   - Added production build and start scripts

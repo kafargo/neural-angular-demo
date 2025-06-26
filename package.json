@@ -1,0 +1,14 @@
+{
+  "name": "neural-angular-demo-root",
+  "version": "1.0.0",
+  "description": "Neural Network Angular Demo - Railway Deployment Root",
+  "scripts": {
+    "build": "cd neural-angular-demo && npm ci && npm run build:prod",
+    "start": "cd neural-angular-demo && npm run start:prod",
+    "install-deps": "cd neural-angular-demo && npm ci"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "private": true
+}

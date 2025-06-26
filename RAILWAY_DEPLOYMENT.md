@@ -76,11 +76,17 @@ These are automatically configured in the environment files and will be used bas
 
 The Railway deployment follows this process:
 
-1. **Install dependencies**: `npm ci`
-2. **Build Angular app**: `npm run build:prod`
-3. **Start Express server**: `npm run start:prod`
+1. **Detect Node.js project**: Railway detects the root `package.json`
+2. **Install root dependencies**: `npm install` (no dependencies, just scripts)
+3. **Run build script**: `npm run build` (delegates to `cd neural-angular-demo && npm ci && npm run build:prod`)
+4. **Start application**: `npm start` (delegates to `cd neural-angular-demo && npm run start:prod`)
 
-The Express server (`server.js`) serves the built Angular application and handles routing for the single-page application.
+The build process automatically:
+
+- Changes to the `neural-angular-demo/` subdirectory
+- Installs Angular app dependencies
+- Builds the Angular app for production
+- Starts the Express server that serves the built application
 
 ## Post-Deployment
 
@@ -128,6 +134,25 @@ The following files have been added/modified for Railway deployment:
 - `src/environments/environment.ts` - Development environment
 - `src/environments/environment.prod.ts` - Production environment
 - `package.json` - Updated with production scripts and dependencies
+
+## Project Structure Note
+
+**Important**: This project has a nested structure where the Angular application is located in the `neural-angular-demo/` subdirectory. The Railway deployment has been configured to handle this automatically:
+
+```
+neural-angular-demo/                    # Root directory (Railway deployment root)
+├── package.json                       # Root package.json (delegates to subdirectory)
+├── railway.json                       # Railway configuration
+├── Procfile                          # Process configuration
+├── Dockerfile                        # Docker configuration
+└── neural-angular-demo/              # Angular application directory
+    ├── package.json                  # Angular app package.json
+    ├── server.js                     # Express server
+    ├── angular.json                  # Angular configuration
+    └── src/                          # Angular source code
+```
+
+The root `package.json` contains scripts that automatically change to the `neural-angular-demo/` directory to build and run the application.
 
 ## Support
 
