@@ -7,10 +7,10 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Check if build directory exists
-const distPath = path.join(__dirname, "dist/neural-angular-demo");
+const distPath = path.join(__dirname, "dist/neural-angular-demo/browser");
 console.log("Checking for dist directory at:", distPath);
 if (!fs.existsSync(distPath)) {
-  console.error("ERROR: dist/neural-angular-demo directory not found!");
+  console.error("ERROR: dist/neural-angular-demo/browser directory not found!");
   console.error(
     "Make sure to run 'npm run build:prod' before starting the server"
   );
@@ -36,11 +36,15 @@ app.get("/health", (req, res) => {
 });
 
 // Serve static files from the Angular app build directory
-app.use(express.static(path.join(__dirname, "dist/neural-angular-demo")));
+app.use(
+  express.static(path.join(__dirname, "dist/neural-angular-demo/browser"))
+);
 
 // Handle Angular routing - return all requests to Angular index.html
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist/neural-angular-demo/index.html"));
+  res.sendFile(
+    path.join(__dirname, "dist/neural-angular-demo/browser/index.html")
+  );
 });
 
 app
