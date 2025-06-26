@@ -2,49 +2,136 @@
   <div class="header-content">
     <h1>Neural Network Demo</h1>
     <p>Explore how neural networks work with MNIST digit classification</p>
+
+    <!-- New Navigation Header -->
+    <nav class="header-navigation">
+      <div
+        class="nav-section"
+        [class.active]="activeSection === 'learn'"
+        [class.clickable]="canNavigateToSection('learn')"
+        (click)="canNavigateToSection('learn') && switchSection('learn')"
+      >
+        <span class="nav-number">1</span>
+        <span class="nav-label">Learn About Neural Nets</span>
+      </div>
+
+      <div class="nav-arrow">
+        <img src="assets/right-arrow.svg" alt="arrow" />
+      </div>
+
+      <div
+        class="nav-section"
+        [class.active]="activeSection === 'create'"
+        [class.clickable]="canNavigateToSection('create')"
+        (click)="canNavigateToSection('create') && switchSection('create')"
+      >
+        <span class="nav-number">2</span>
+        <span class="nav-label">Create a Network</span>
+      </div>
+
+      <div class="nav-arrow">
+        <img src="assets/right-arrow.svg" alt="arrow" />
+      </div>
+
+      <div
+        class="nav-section"
+        [class.active]="activeSection === 'train'"
+        [class.clickable]="canNavigateToSection('train')"
+        (click)="canNavigateToSection('train') && switchSection('train')"
+      >
+        <span class="nav-number">3</span>
+        <span class="nav-label">Train a Network</span>
+      </div>
+
+      <div class="nav-arrow">
+        <img src="/assets/right-arrow.svg" alt="arrow" />
+      </div>
+
+      <div
+        class="nav-section"
+        [class.active]="activeSection === 'test'"
+        [class.clickable]="canNavigateToSection('test')"
+        (click)="canNavigateToSection('test') && switchSection('test')"
+      >
+        <span class="nav-number">4</span>
+        <span class="nav-label">Test the Network</span>
+      </div>
+    </nav>
   </div>
 </header>
 
 <div class="app-layout">
-  <!-- Side Navigation Panel -->
-  <aside class="side-nav">
-    <nav class="nav-buttons">
-      <button
-        class="nav-button"
-        [class.active]="activeSection === 'create'"
-        (click)="switchSection('create')"
-      >
-        Create Network
-      </button>
-      <button
-        class="nav-button"
-        [class.active]="activeSection === 'train'"
-        (click)="switchSection('train')"
-        [disabled]="!networkId"
-      >
-        Train Network
-      </button>
-      <button
-        class="nav-button"
-        [class.active]="activeSection === 'test'"
-        (click)="switchSection('test')"
-        [disabled]="!networkId || !trainingComplete"
-      >
-        Test Network
-      </button>
-    </nav>
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <!-- Learn About Neural Nets Section -->
+    <section class="content-section" *ngIf="activeSection === 'learn'">
+      <div class="section-header">
+        <h2>Learn About Neural Networks</h2>
+        <p>
+          Understanding the basics of artificial neural networks and how they
+          work
+        </p>
+      </div>
 
-    <!-- Dynamic Input Area based on active section -->
-    <div class="side-panel-content">
-      <!-- Create Network Inputs -->
-      <div class="panel-section" *ngIf="activeSection === 'create'">
-        <h3>Configure Network</h3>
-        <div class="layer-config">
-          <p>Configure hidden layers:</p>
-          <div class="layer-controls">
+      <div class="learn-content">
+        <div class="learn-card">
+          <h3>What is a Neural Network?</h3>
+          <p>
+            A neural network is a computing system inspired by biological neural
+            networks. It consists of interconnected nodes (neurons) organized in
+            layers that process information.
+          </p>
+        </div>
+
+        <div class="learn-card">
+          <h3>How Does it Work?</h3>
+          <p>
+            Neural networks learn by adjusting connection weights between
+            neurons based on training data. This process allows them to
+            recognize patterns and make predictions.
+          </p>
+        </div>
+
+        <div class="learn-card">
+          <h3>MNIST Dataset</h3>
+          <p>
+            In this demo, we'll use the MNIST dataset - a collection of 70,000
+            handwritten digits (0-9) commonly used for training image processing
+            systems.
+          </p>
+        </div>
+
+        <div class="learn-card">
+          <h3>Network Architecture</h3>
+          <p>
+            Our network will have an input layer (784 neurons for 28x28 pixel
+            images), hidden layers for processing, and an output layer (10
+            neurons for digits 0-9).
+          </p>
+        </div>
+      </div>
+
+      <div class="section-actions">
+        <button class="continue-button" (click)="continueToCreate()">
+          Continue to Create Network
+        </button>
+      </div>
+    </section>
+
+    <!-- Create Network Section -->
+    <section class="content-section" *ngIf="activeSection === 'create'">
+      <div class="section-header">
+        <h2>Create a Network</h2>
+        <p>Configure your neural network architecture</p>
+      </div>
+
+      <div class="create-content">
+        <div class="config-panel">
+          <h3>Configure Network Architecture</h3>
+          <div class="layer-config">
             <div class="layer-item">
               <label>
-                <span>Hidden Layer 1:</span>
+                <span>Hidden Layer 1 Size:</span>
                 <input
                   type="number"
                   [(ngModel)]="hiddenLayer1"
@@ -55,20 +142,20 @@
               </label>
             </div>
 
-            <div class="layer-checkbox">
-              <label>
+            <div class="layer-item">
+              <label class="checkbox-label">
                 <input
                   type="checkbox"
                   [(ngModel)]="useSecondLayer"
                   (change)="previewNetworkStructure()"
                 />
-                Add second hidden layer
+                <span>Use Second Hidden Layer</span>
               </label>
             </div>
 
-            <div *ngIf="useSecondLayer" class="layer-item">
+            <div class="layer-item" *ngIf="useSecondLayer">
               <label>
-                <span>Hidden Layer 2:</span>
+                <span>Hidden Layer 2 Size:</span>
                 <input
                   type="number"
                   [(ngModel)]="hiddenLayer2"
@@ -79,490 +166,269 @@
               </label>
             </div>
           </div>
+
+          <div class="network-preview">
+            <h4>Network Structure Preview:</h4>
+            <div class="layer-preview">
+              <span class="layer-size">Input: 784</span>
+              <span class="arrow">→</span>
+              <span class="layer-size">Hidden: {{ hiddenLayer1 }}</span>
+              <span class="arrow" *ngIf="useSecondLayer">→</span>
+              <span class="layer-size" *ngIf="useSecondLayer"
+                >Hidden: {{ hiddenLayer2 }}</span
+              >
+              <span class="arrow">→</span>
+              <span class="layer-size">Output: 10</span>
+            </div>
+          </div>
+
           <button
+            class="create-network-button"
             (click)="createNetwork()"
             [disabled]="loading"
-            class="action-button"
           >
             {{ loading ? "Creating..." : "Create Network" }}
           </button>
         </div>
       </div>
+    </section>
 
-      <!-- Train Network Inputs -->
-      <div class="panel-section" *ngIf="activeSection === 'train' && networkId">
-        <h3>Training Parameters</h3>
-        <div class="training-params">
-          <div class="param-item">
-            <label>
-              <span>Epochs:</span>
-              <input type="number" [(ngModel)]="epochs" min="1" max="50" />
-            </label>
-            <span class="param-hint">Passes through training data</span>
-          </div>
-
-          <div class="param-item">
-            <label>
-              <span>Mini Batch Size:</span>
-              <input
-                type="number"
-                [(ngModel)]="miniBatchSize"
-                min="1"
-                max="100"
-              />
-            </label>
-            <span class="param-hint">Examples processed together</span>
-          </div>
-
-          <div class="param-item">
-            <label>
-              <span>Learning Rate:</span>
-              <input
-                type="number"
-                [(ngModel)]="learningRate"
-                min="0.1"
-                max="10"
-                step="0.1"
-              />
-            </label>
-            <span class="param-hint">Step size for gradient descent</span>
-          </div>
-
-          <button
-            (click)="startTraining()"
-            [disabled]="trainingStarted || trainingLoading"
-            class="action-button"
-          >
-            {{ trainingLoading ? "Starting Training..." : "Start Training" }}
-          </button>
-        </div>
+    <!-- Train Network Section -->
+    <section class="content-section" *ngIf="activeSection === 'train'">
+      <div class="section-header">
+        <h2>Train the Network</h2>
+        <p>Configure training parameters and start the learning process</p>
       </div>
 
-      <!-- Test Network Inputs -->
-      <div
-        class="panel-section"
-        *ngIf="activeSection === 'test' && networkId && trainingComplete"
-      >
-        <h3>Test Options</h3>
-        <div class="example-controls">
-          <button
-            (click)="loadSuccessfulExample()"
-            [disabled]="loadingExample"
-            class="action-button success-button"
-          >
-            Show Successful Example
-          </button>
-
-          <button
-            (click)="loadUnsuccessfulExample()"
-            [disabled]="loadingExample"
-            class="action-button error-button"
-          >
-            Show Unsuccessful Example
-          </button>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Main Content Area -->
-  <main class="main-content">
-    <!-- Collapsible Info Section -->
-    <!-- <div class="info-section">
-      <button class="info-toggle" (click)="toggleInfoSection()">
-        {{
-          showInfoSection ? "Hide Information" : "Understanding Neural Networks"
-        }}
-      </button>
-      <div class="intro-section" *ngIf="showInfoSection">
-        <p>
-          This application demonstrates a neural network for classifying
-          handwritten digits (0-9) using the MNIST dataset. The network consists
-          of an input layer with 784 nodes (representing a 28×28 pixel image),
-          customizable hidden layers, and an output layer with 10 nodes (one for
-          each digit).
-        </p>
-      </div>
-    </div> -->
-
-    <!-- Dynamic Content Area based on active section -->
-    <div class="dynamic-content">
-      <!-- Training Progress (shown when training) -->
-      <div
-        class="training-display"
-        *ngIf="activeSection === 'train' && networkId && trainingStarted"
-      >
-        <div *ngIf="!trainingComplete" class="training-progress">
-          <h3>Training in Progress</h3>
-          <div class="progress-container">
-            <div class="progress-bar" [style.width.%]="trainingProgress"></div>
-          </div>
-
-          <div class="enhanced-progress-details" *ngIf="currentTraining">
-            <div class="training-detail-row">
-              <span class="detail-label">Progress:</span>
-              <span class="detail-value">{{ trainingProgress }}%</span>
+      <div class="train-content">
+        <div class="training-config" *ngIf="!trainingStarted">
+          <h3>Training Parameters</h3>
+          <div class="param-grid">
+            <div class="param-item">
+              <label>
+                <span>Epochs:</span>
+                <input type="number" [(ngModel)]="epochs" min="1" max="100" />
+              </label>
             </div>
+            <div class="param-item">
+              <label>
+                <span>Mini-batch Size:</span>
+                <input
+                  type="number"
+                  [(ngModel)]="miniBatchSize"
+                  min="1"
+                  max="100"
+                />
+              </label>
+            </div>
+            <div class="param-item">
+              <label>
+                <span>Learning Rate:</span>
+                <input
+                  type="number"
+                  [(ngModel)]="learningRate"
+                  step="0.1"
+                  min="0.1"
+                  max="10"
+                />
+              </label>
+            </div>
+          </div>
 
-            <div class="training-detail-row">
-              <span class="detail-label">Epoch:</span>
-              <span class="detail-value"
-                >{{ currentTraining.epoch }} /
+          <button
+            class="start-training-button"
+            (click)="startTraining()"
+            [disabled]="trainingLoading || !networkId"
+          >
+            {{ trainingLoading ? "Starting..." : "Start Training" }}
+          </button>
+        </div>
+
+        <div class="training-progress" *ngIf="trainingStarted">
+          <h3>Training Progress</h3>
+          <div class="progress-info" *ngIf="currentTraining">
+            <div class="progress-stat">
+              <label>Epoch:</label>
+              <span
+                >{{ currentTraining.current_epoch }} /
                 {{ currentTraining.total_epochs }}</span
               >
             </div>
 
-            <div
-              class="training-detail-row"
-              *ngIf="currentTraining.accuracy !== null"
-            >
-              <span class="detail-label">Accuracy:</span>
-              <span class="detail-value"
-                >{{ (currentTraining.accuracy * 100).toFixed(2) }}%</span
-              >
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                [style.width.%]="currentTraining.progress"
+              ></div>
             </div>
 
-            <div
-              class="training-detail-row"
-              *ngIf="currentTraining.correct && currentTraining.total"
-            >
-              <span class="detail-label">Correct/Total:</span>
-              <span class="detail-value"
-                >{{ currentTraining.correct }} /
-                {{ currentTraining.total }}</span
-              >
-            </div>
-
-            <div class="training-detail-row">
-              <span class="detail-label">Time (this epoch):</span>
-              <span class="detail-value"
-                >{{ currentTraining.elapsed_time.toFixed(2) }}s</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="trainingComplete" class="training-complete">
-          <h3>Training Complete!</h3>
-          <div class="training-results">
-            <div class="result-item">
-              <div class="result-label">Final Accuracy:</div>
-              <div class="result-value">
-                {{ finalAccuracy | percent : "1.1-1" }}
+            <div class="progress-stats">
+              <div class="stat">
+                <label>Accuracy:</label>
+                <span>{{ (currentTraining.accuracy * 100).toFixed(2) }}%</span>
+              </div>
+              <div class="stat">
+                <label>Correct:</label>
+                <span
+                  >{{ currentTraining.correct }} /
+                  {{ currentTraining.total }}</span
+                >
+              </div>
+              <div class="stat">
+                <label>Time:</label>
+                <span>{{ currentTraining.elapsed_time.toFixed(1) }}s</span>
               </div>
             </div>
-            <div class="result-item">
-              <div class="result-label">Epochs Completed:</div>
-              <div class="result-value">{{ epochs }}</div>
-            </div>
+          </div>
+
+          <div class="training-complete" *ngIf="trainingComplete">
+            <h4>Training Complete!</h4>
+            <p>Final Accuracy: {{ (finalAccuracy! * 100).toFixed(2) }}%</p>
+            <button class="continue-button" (click)="continueToTest()">
+              Continue to Test Network
+            </button>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Test Results (shown when testing) -->
-      <!-- Debug info to help diagnose why examples aren't showing -->
-      <!-- <div
-        *ngIf="activeSection === 'test' && (!currentExample || !networkId)"
-        class="debug-info"
-      >
-        <p>
-          Waiting for example data... Active Section: {{ activeSection }},
-          Network ID: {{ networkId ? "Set" : "Not Set" }}, Example:
-          {{ currentExample ? "Loaded" : "Not Loaded" }}
-        </p>
-        <button (click)="createFallbackExample(true)" class="action-button">
-          Create Test Example
-        </button>
-      </div> -->
+    <!-- Test Network Section -->
+    <section class="content-section" *ngIf="activeSection === 'test'">
+      <div class="section-header">
+        <h2>Test the Network</h2>
+        <p>Try your trained network with test examples</p>
+      </div>
 
-      <div
-        class="example-display"
-        *ngIf="activeSection === 'test' && currentExample"
-      >
-        <div class="example-content">
-          <div class="example-card">
-            <div
-              class="card-header"
-              [ngClass]="{
-                success: currentExample.correct,
-                error: !currentExample.correct
-              }"
-            >
-              <h3>
-                {{ currentExample.correct ? "Successful" : "Unsuccessful" }}
-                Classification
-              </h3>
+      <div class="test-content">
+        <div class="test-controls">
+          <button
+            class="test-button"
+            (click)="getRandomExample()"
+            [disabled]="loadingExample"
+          >
+            {{ loadingExample ? "Loading..." : "Get Random Test Example" }}
+          </button>
+
+          <button
+            class="test-button secondary"
+            (click)="showExamples = !showExamples"
+          >
+            {{ showExamples ? "Hide" : "Show" }} Success/Failure Examples
+          </button>
+        </div>
+
+        <div class="test-result" *ngIf="currentExample">
+          <div class="example-display">
+            <div class="example-image">
+              <h4>Test Image:</h4>
+              <img
+                [src]="currentExample.image_data"
+                alt="Test digit"
+                (load)="imageLoaded = true"
+                (error)="imageLoaded = false"
+              />
+              <div *ngIf="!imageLoaded" class="fallback-image">
+                <img src="assets/fallback-digit.png" alt="Fallback digit" />
+              </div>
             </div>
 
-            <div class="card-body">
-              <!-- Debug info -->
-              <!-- <div
-                class="debug-info"
-                style="
-                  margin-bottom: 10px;
-                  padding: 10px;
-                  background: #f0f0f0;
-                  font-size: 12px;
-                "
-              >
-                <strong>Debug Info:</strong><br />
-                Image Data Type: {{ typeof currentExample.image_data }}<br />
-                Image Data Length:
-                {{ currentExample.image_data?.length || "N/A" }}<br />
-                Image Data Preview:
-                {{
-                  (currentExample.image_data || "").toString().substring(0, 50)
-                }}...<br />
-                Correct Flag: {{ currentExample.correct }}<br />
-                Image Loaded: {{ imageLoaded }}
-              </div> -->
-
-              <div class="image-container">
-                <img
-                  [src]="sanitizeImageData(currentExample.image_data)"
-                  alt="MNIST Digit"
-                  class="digit-image"
-                  (error)="handleImageError($event)"
-                  (load)="imageLoaded = true"
-                  [ngClass]="{ 'image-load-error': !imageLoaded }"
-                  crossorigin="anonymous"
-                />
-                <div class="fallback-digit" *ngIf="!imageLoaded">
-                  {{ currentExample.actual_digit }}
-                </div>
+            <div class="prediction-result">
+              <h4>Prediction Results:</h4>
+              <div class="result-item">
+                <label>Actual Label:</label>
+                <span class="actual-label">{{
+                  currentExample.actual_label
+                }}</span>
               </div>
+              <div class="result-item">
+                <label>Predicted:</label>
+                <span
+                  class="predicted-label"
+                  [class.correct]="
+                    currentExample.predicted_label ===
+                    currentExample.actual_label
+                  "
+                  [class.incorrect]="
+                    currentExample.predicted_label !==
+                    currentExample.actual_label
+                  "
+                >
+                  {{ currentExample.predicted_label }}
+                </span>
+              </div>
+              <div class="result-item">
+                <label>Confidence:</label>
+                <span class="confidence"
+                  >{{ (currentExample.confidence * 100).toFixed(1) }}%</span
+                >
+              </div>
+              <div class="result-status">
+                <span
+                  class="status"
+                  [class.success]="
+                    currentExample.predicted_label ===
+                    currentExample.actual_label
+                  "
+                  [class.failure]="
+                    currentExample.predicted_label !==
+                    currentExample.actual_label
+                  "
+                >
+                  {{
+                    currentExample.predicted_label ===
+                    currentExample.actual_label
+                      ? "✓ Correct"
+                      : "✗ Incorrect"
+                  }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
 
-              <div class="prediction-details">
-                <div class="prediction-row">
-                  <div class="label">Predicted Digit:</div>
-                  <div
-                    class="value"
-                    [ngClass]="{
-                      success: currentExample.correct,
-                      error: !currentExample.correct
-                    }"
-                  >
-                    {{ currentExample.predicted_digit }}
+        <!-- Success/Failure Examples Section -->
+        <div class="examples-section" *ngIf="showExamples">
+          <div class="examples-grid">
+            <!-- Success Examples -->
+            <div class="example-category">
+              <h4>Successful Classifications</h4>
+              <div class="example-list">
+                <div
+                  class="mini-example"
+                  *ngFor="let example of successExamples"
+                >
+                  <img [src]="example.image_data" alt="Success example" />
+                  <div class="mini-label">
+                    {{ example.actual_label }} → {{ example.predicted_label }}
+                    <span class="confidence"
+                      >({{ (example.confidence * 100).toFixed(0) }}%)</span
+                    >
                   </div>
                 </div>
-
-                <div class="prediction-row">
-                  <div class="label">Actual Digit:</div>
-                  <div class="value">{{ currentExample.actual_digit }}</div>
-                </div>
               </div>
             </div>
-          </div>
 
-          <div class="network-output">
-            <h3>Network Output</h3>
-            <p class="output-description">
-              The values below show the network's confidence (as percentages)
-              for each digit:
-            </p>
-
-            <div class="output-bars">
-              <div
-                *ngFor="
-                  let value of currentExample.network_output;
-                  let i = index
-                "
-                class="output-bar-container"
-              >
-                <div class="digit-label">{{ i }}</div>
-                <div class="bar-container">
-                  <div
-                    class="bar"
-                    [style.width.%]="value * 100"
-                    [ngClass]="{
-                      selected: i === currentExample.predicted_digit
-                    }"
-                  ></div>
-                  <span class="bar-value"
-                    >{{ value * 100 | number : "1.1-1" }}%</span
-                  >
+            <!-- Failure Examples -->
+            <div class="example-category">
+              <h4>Failed Classifications</h4>
+              <div class="example-list">
+                <div
+                  class="mini-example"
+                  *ngFor="let example of failureExamples"
+                >
+                  <img [src]="example.image_data" alt="Failure example" />
+                  <div class="mini-label error">
+                    {{ example.actual_label }} → {{ example.predicted_label }}
+                    <span class="confidence"
+                      >({{ (example.confidence * 100).toFixed(0) }}%)</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </main>
 </div>
-
-<footer>
-  <div class="footer-content">
-    <p>© 2025 Neural Network Demo - Built with Angular</p>
-  </div>
-</footer>
-
-<style>
-  :host {
-    --bright-blue: oklch(51.01% 0.274 263.83);
-    --electric-violet: oklch(53.18% 0.28 296.97);
-    --french-violet: oklch(47.66% 0.246 305.88);
-    --vivid-pink: oklch(69.02% 0.277 332.77);
-    --hot-red: oklch(61.42% 0.238 15.34);
-    --orange-red: oklch(63.32% 0.24 31.68);
-
-    --gray-900: oklch(19.37% 0.006 300.98);
-    --gray-700: oklch(36.98% 0.014 302.71);
-    --gray-400: oklch(70.9% 0.015 304.04);
-
-    --red-to-pink-to-purple-vertical-gradient: linear-gradient(
-      180deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --red-to-pink-to-purple-horizontal-gradient: linear-gradient(
-      90deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --pill-accent: var(--bright-blue);
-
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  h1 {
-    font-size: 3.125rem;
-    color: var(--gray-900);
-    font-weight: 500;
-    line-height: 100%;
-    letter-spacing: -0.125rem;
-    margin: 0;
-    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
-      "Segoe UI Emoji", "Segoe UI Symbol";
-  }
-
-  p {
-    margin: 0;
-    color: var(--gray-700);
-  }
-
-  main {
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    box-sizing: inherit;
-    position: relative;
-  }
-
-  .angular-logo {
-    max-width: 9.2rem;
-  }
-
-  .content {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 700px;
-    margin-bottom: 3rem;
-  }
-
-  .content h1 {
-    margin-top: 1.75rem;
-  }
-
-  .content p {
-    margin-top: 1.5rem;
-  }
-
-  .divider {
-    width: 1px;
-    background: var(--red-to-pink-to-purple-vertical-gradient);
-    margin-inline: 0.5rem;
-  }
-
-  .pill-group {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-  }
-
-  .pill {
-    display: flex;
-    align-items: center;
-    --pill-accent: var(--bright-blue);
-    background: color-mix(in srgb, var(--pill-accent) 5%, transparent);
-    color: var(--pill-accent);
-    padding-inline: 0.75rem;
-    padding-block: 0.375rem;
-    border-radius: 2.75rem;
-    border: 0;
-    transition: background 0.3s ease;
-    font-family: var(--inter-font);
-    font-size: 0.875rem;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 1.4rem;
-    letter-spacing: -0.00875rem;
-    text-decoration: none;
-  }
-
-  .pill:hover {
-    background: color-mix(in srgb, var(--pill-accent) 15%, transparent);
-  }
-
-  .pill-group .pill:nth-child(6n + 1) {
-    --pill-accent: var(--bright-blue);
-  }
-  .pill-group .pill:nth-child(6n + 2) {
-    --pill-accent: var(--french-violet);
-  }
-  .pill-group .pill:nth-child(6n + 3),
-  .pill-group .pill:nth-child(6n + 4),
-  .pill-group .pill:nth-child(6n + 5) {
-    --pill-accent: var(--hot-red);
-  }
-
-  .pill-group svg {
-    margin-inline-start: 0.25rem;
-  }
-
-  .social-links {
-    display: flex;
-    align-items: center;
-    gap: 0.73rem;
-    margin-top: 1.5rem;
-  }
-
-  .social-links path {
-    transition: fill 0.3s ease;
-    fill: var(--gray-400);
-  }
-
-  .social-links a:hover svg path {
-    fill: var(--gray-900);
-  }
-
-  @media screen and (max-width: 650px) {
-    .content {
-      flex-direction: column;
-      width: max-content;
-    }
-
-    .divider {
-      height: 1px;
-      width: 100%;
-      background: var(--red-to-pink-to-purple-horizontal-gradient);
-      margin-block: 1.5rem;
-    }
-  }
-</style>

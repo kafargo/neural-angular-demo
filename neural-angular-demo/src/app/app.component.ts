@@ -20,7 +20,7 @@ import { NeuralNetworkService } from './services/neural-network.service';
 export class AppComponent implements OnInit {
   // UI state
   title = 'Neural Network Demo';
-  activeSection: 'create' | 'train' | 'test' = 'create';
+  activeSection: 'learn' | 'create' | 'train' | 'test' = 'learn';
   loading: boolean = false;
   loadingExample: boolean = false;
   error: string | null = null;
@@ -54,6 +54,10 @@ export class AppComponent implements OnInit {
   miniBatchSize: number = 10;
   learningRate: number = 3.0;
   
+  // Success/failure examples
+  successExamples: any[] = [];
+  failureExamples: any[] = [];
+  
   constructor(
     private neuralNetworkService: NeuralNetworkService,
     private sanitizer: DomSanitizer
@@ -70,8 +74,37 @@ export class AppComponent implements OnInit {
   }
   
   // Navigation Methods
-  switchSection(section: 'create' | 'train' | 'test'): void {
+  switchSection(section: 'learn' | 'create' | 'train' | 'test'): void {
     this.activeSection = section;
+  }
+
+  // Navigation progression methods
+  continueToCreate(): void {
+    this.switchSection('create');
+  }
+
+  continueToTrain(): void {
+    this.switchSection('train');
+  }
+
+  continueToTest(): void {
+    this.switchSection('test');
+  }
+
+  // Check if user can navigate to a section
+  canNavigateToSection(section: 'learn' | 'create' | 'train' | 'test'): boolean {
+    switch (section) {
+      case 'learn':
+        return true;
+      case 'create':
+        return true;
+      case 'train':
+        return !!this.networkId;
+      case 'test':
+        return !!this.networkId && this.trainingComplete;
+      default:
+        return false;
+    }
   }
   
   // Network Configuration Methods
@@ -105,7 +138,7 @@ export class AppComponent implements OnInit {
       next: (response) => {
         this.networkId = response.network_id;
         this.loading = false;
-        this.switchSection('train');
+        this.continueToTrain();
       },
       error: (error) => {
         console.error('Error creating network:', error);
@@ -182,6 +215,7 @@ export class AppComponent implements OnInit {
         this.trainingComplete = true;
         this.isTraining = false;
         this.finalAccuracy = this.currentTraining.accuracy;
+        this.loadExamplesForDisplay(); // Load examples when training completes
       } else {
         // Increment the epoch for the next update
         currentEpoch++;
@@ -277,6 +311,16 @@ export class AppComponent implements OnInit {
     });
   }
   
+  // Get a random example (either successful or unsuccessful)
+  getRandomExample(): void {
+    const isSuccessful = Math.random() > 0.5; // 50/50 chance
+    if (isSuccessful) {
+      this.loadSuccessfulExample();
+    } else {
+      this.loadUnsuccessfulExample();
+    }
+  }
+
   // Helper method to create a fallback example if the API fails
   createFallbackExample(isSuccessful: boolean): void {
     console.log('Creating fallback example');
@@ -326,6 +370,35 @@ export class AppComponent implements OnInit {
     this.switchSection('test');
   }
   
+  // Load success and failure examples for display
+  loadExamplesForDisplay(): void {
+    if (this.networkId && this.trainingComplete) {
+      // Load 3 successful examples
+      this.neuralNetworkService.getExamples(this.networkId, true).subscribe({
+        next: (examples) => {
+          if (Array.isArray(examples)) {
+            this.successExamples = examples.slice(0, 3);
+          } else {
+            this.successExamples = [examples];
+          }
+        },
+        error: (error) => console.error('Error loading success examples:', error)
+      });
+
+      // Load 3 failure examples
+      this.neuralNetworkService.getExamples(this.networkId, false).subscribe({
+        next: (examples) => {
+          if (Array.isArray(examples)) {
+            this.failureExamples = examples.slice(0, 3);
+          } else {
+            this.failureExamples = [examples];
+          }
+        },
+        error: (error) => console.error('Error loading failure examples:', error)
+      });
+    }
+  }
+
   // Sanitize image data for safe display in the browser
   sanitizeImageData(imageData: string): SafeResourceUrl {
     if (!imageData) return this.sanitizer.bypassSecurityTrustResourceUrl('');
