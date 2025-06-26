@@ -125,6 +125,19 @@ export class AppComponent implements OnInit {
   createNetwork(): void {
     this.loading = true;
     
+    // Reset all subsequent steps
+    this.trainingStarted = false;
+    this.trainingComplete = false;
+    this.isTraining = false;
+    this.trainingProgress = 0;
+    this.finalAccuracy = null;
+    this.currentTraining = null;
+    this.currentExample = null;
+    this.successExamples = [];
+    this.failureExamples = [];
+    this.showExamples = false;
+    this.networkId = '';
+    
     // Build layer sizes array with required input (784) and output (10) sizes
     const layerConfig = [784, this.hiddenLayer1];
     if (this.useSecondLayer) {
