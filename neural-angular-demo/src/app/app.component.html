@@ -309,11 +309,8 @@
             {{ loadingExample ? "Loading..." : "Get Random Test Example" }}
           </button>
 
-          <button
-            class="test-button secondary"
-            (click)="showExamples = !showExamples"
-          >
-            {{ showExamples ? "Hide" : "Show" }} Success/Failure Examples
+          <button class="test-button secondary" (click)="generateNewExamples()">
+            Generate New Success/Failure Examples
           </button>
         </div>
 

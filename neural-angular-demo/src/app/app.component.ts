@@ -24,9 +24,10 @@ export class AppComponent implements OnInit {
   loading: boolean = false;
   loadingExample: boolean = false;
   error: string | null = null;
-  showExamples: boolean = false;
+  showExamples: boolean = true;
   imageLoaded: boolean = true;
   showInfoSection: boolean = false; // Added property for info section toggle
+  testDataInitialized: boolean = false; // Track if test section data has been initialized
   
   // Training related properties
   trainingLoading: boolean = false;
@@ -76,6 +77,12 @@ export class AppComponent implements OnInit {
   // Navigation Methods
   switchSection(section: 'learn' | 'create' | 'train' | 'test'): void {
     this.activeSection = section;
+    
+    // Load default data when navigating to test section for the first time
+    if (section === 'test' && !this.testDataInitialized) {
+      this.loadDefaultData();
+      this.testDataInitialized = true;
+    }
   }
 
   // Navigation progression methods
@@ -412,6 +419,12 @@ export class AppComponent implements OnInit {
     }
   }
 
+  // Generate new success/failure examples
+  generateNewExamples(): void {
+    this.loadExamplesForDisplay();
+    this.showExamples = true; // Ensure examples are visible
+  }
+
   // Sanitize image data for safe display in the browser
   sanitizeImageData(imageData: string): SafeResourceUrl {
     if (!imageData) return this.sanitizer.bypassSecurityTrustResourceUrl('');
@@ -438,5 +451,17 @@ export class AppComponent implements OnInit {
     }
     const maxConfidence = Math.max(...networkOutput);
     return (maxConfidence * 100).toFixed(1);
+  }
+
+  // Load default data on initialization
+  loadDefaultData(): void {
+    // Load a default random example
+    this.getRandomExample();
+    
+    // Load default success/failure examples
+    this.loadExamplesForDisplay();
+    
+    // Ensure examples are visible
+    this.showExamples = true;
   }
 }
