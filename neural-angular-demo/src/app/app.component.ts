@@ -430,4 +430,13 @@ export class AppComponent implements OnInit {
     const dataUri = `data:image/png;base64,${imageData}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(dataUri);
   }
+
+  // Calculate the maximum confidence from network output
+  getMaxConfidence(networkOutput: number[]): string {
+    if (!networkOutput || !Array.isArray(networkOutput)) {
+      return '0.0';
+    }
+    const maxConfidence = Math.max(...networkOutput);
+    return (maxConfidence * 100).toFixed(1);
+  }
 }

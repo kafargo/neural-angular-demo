@@ -322,10 +322,10 @@
             <div class="example-image">
               <h4>Test Image:</h4>
               <img
-                [src]="currentExample.image_data"
+                [src]="sanitizeImageData(currentExample.image_data)"
                 alt="Test digit"
                 (load)="imageLoaded = true"
-                (error)="imageLoaded = false"
+                (error)="handleImageError($event)"
               />
               <div *ngIf="!imageLoaded" class="fallback-image">
                 <img src="assets/fallback-digit.png" alt="Fallback digit" />
@@ -337,7 +337,7 @@
               <div class="result-item">
                 <label>Actual Label:</label>
                 <span class="actual-label">{{
-                  currentExample.actual_label
+                  currentExample.actual_digit
                 }}</span>
               </div>
               <div class="result-item">
@@ -345,38 +345,38 @@
                 <span
                   class="predicted-label"
                   [class.correct]="
-                    currentExample.predicted_label ===
-                    currentExample.actual_label
+                    currentExample.predicted_digit ===
+                    currentExample.actual_digit
                   "
                   [class.incorrect]="
-                    currentExample.predicted_label !==
-                    currentExample.actual_label
+                    currentExample.predicted_digit !==
+                    currentExample.actual_digit
                   "
                 >
-                  {{ currentExample.predicted_label }}
+                  {{ currentExample.predicted_digit }}
                 </span>
               </div>
               <div class="result-item">
                 <label>Confidence:</label>
                 <span class="confidence"
-                  >{{ (currentExample.confidence * 100).toFixed(1) }}%</span
+                  >{{ getMaxConfidence(currentExample.network_output) }}%</span
                 >
               </div>
               <div class="result-status">
                 <span
                   class="status"
                   [class.success]="
-                    currentExample.predicted_label ===
-                    currentExample.actual_label
+                    currentExample.predicted_digit ===
+                    currentExample.actual_digit
                   "
                   [class.failure]="
-                    currentExample.predicted_label !==
-                    currentExample.actual_label
+                    currentExample.predicted_digit !==
+                    currentExample.actual_digit
                   "
                 >
                   {{
-                    currentExample.predicted_label ===
-                    currentExample.actual_label
+                    currentExample.predicted_digit ===
+                    currentExample.actual_digit
                       ? "✓ Correct"
                       : "✗ Incorrect"
                   }}
@@ -397,11 +397,14 @@
                   class="mini-example"
                   *ngFor="let example of successExamples"
                 >
-                  <img [src]="example.image_data" alt="Success example" />
+                  <img
+                    [src]="sanitizeImageData(example.image_data)"
+                    alt="Success example"
+                  />
                   <div class="mini-label">
-                    {{ example.actual_label }} → {{ example.predicted_label }}
+                    {{ example.actual_digit }} → {{ example.predicted_digit }}
                     <span class="confidence"
-                      >({{ (example.confidence * 100).toFixed(0) }}%)</span
+                      >({{ getMaxConfidence(example.network_output) }}%)</span
                     >
                   </div>
                 </div>
@@ -416,11 +419,14 @@
                   class="mini-example"
                   *ngFor="let example of failureExamples"
                 >
-                  <img [src]="example.image_data" alt="Failure example" />
+                  <img
+                    [src]="sanitizeImageData(example.image_data)"
+                    alt="Failure example"
+                  />
                   <div class="mini-label error">
-                    {{ example.actual_label }} → {{ example.predicted_label }}
+                    {{ example.actual_digit }} → {{ example.predicted_digit }}
                     <span class="confidence"
-                      >({{ (example.confidence * 100).toFixed(0) }}%)</span
+                      >({{ getMaxConfidence(example.network_output) }}%)</span
                     >
                   </div>
                 </div>
