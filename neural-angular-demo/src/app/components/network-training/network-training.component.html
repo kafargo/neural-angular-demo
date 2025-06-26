@@ -1,0 +1,97 @@
+<section class="training-section">
+  <div class="training-header">
+    <h2>Train the Network</h2>
+    <p>Configure training parameters and start the learning process</p>
+  </div>
+
+  <div class="training-content">
+    <!-- Training Configuration -->
+    <div class="training-config" *ngIf="!trainingStarted && !finalAccuracy">
+      <div class="config-panel">
+        <h3>Training Parameters</h3>
+
+        <div class="param-grid">
+          <div class="param-item">
+            <label>
+              <span>Epochs:</span>
+              <input
+                type="number"
+                [(ngModel)]="trainingConfig.epochs"
+                min="1"
+                max="100"
+                (change)="onConfigChange()"
+              />
+            </label>
+            <small class="help-text"
+              >Number of times to process the entire training dataset</small
+            >
+          </div>
+
+          <div class="param-item">
+            <label>
+              <span>Mini-batch Size:</span>
+              <input
+                type="number"
+                [(ngModel)]="trainingConfig.miniBatchSize"
+                min="1"
+                max="100"
+                (change)="onConfigChange()"
+              />
+            </label>
+            <small class="help-text"
+              >Number of training examples processed together</small
+            >
+          </div>
+
+          <div class="param-item">
+            <label>
+              <span>Learning Rate:</span>
+              <input
+                type="number"
+                [(ngModel)]="trainingConfig.learningRate"
+                step="0.1"
+                min="0.1"
+                max="10"
+                (change)="onConfigChange()"
+              />
+            </label>
+            <small class="help-text"
+              >Step size for gradient descent optimization</small
+            >
+          </div>
+        </div>
+
+        <div class="actions">
+          <button
+            class="start-training-button"
+            (click)="startTraining()"
+            [disabled]="trainingLoading || !networkId"
+          >
+            {{ trainingLoading ? "Starting..." : "Start Training" }}
+          </button>
+        </div>
+
+        <div class="error-message" *ngIf="error">
+          {{ error }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Training Progress -->
+    <app-training-progress
+      *ngIf="trainingStarted || finalAccuracy"
+      [currentTraining]="currentTraining"
+      [trainingProgress]="trainingProgress"
+      [trainingComplete]="!!finalAccuracy"
+      [finalAccuracy]="finalAccuracy"
+    >
+    </app-training-progress>
+
+    <!-- Continue Button -->
+    <div class="continue-section" *ngIf="finalAccuracy">
+      <button class="continue-button" (click)="onContinueToTest()">
+        Continue to Test Network
+      </button>
+    </div>
+  </div>
+</section>

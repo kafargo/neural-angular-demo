@@ -1,0 +1,52 @@
+<div class="training-progress" *ngIf="!trainingComplete">
+  <h3>Training in Progress</h3>
+
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="trainingProgress"></div>
+    </div>
+    <div class="progress-text">{{ trainingProgress.toFixed(1) }}%</div>
+  </div>
+
+  <div class="training-stats" *ngIf="currentTraining">
+    <div class="stat-grid">
+      <div class="stat-item">
+        <span class="stat-label">Epoch:</span>
+        <span class="stat-value"
+          >{{ currentTraining.epoch }} /
+          {{ currentTraining.total_epochs }}</span
+        >
+      </div>
+
+      <div class="stat-item">
+        <span class="stat-label">Accuracy:</span>
+        <span class="stat-value"
+          >{{ getAccuracyPercentage() | number : "1.2-2" }}%</span
+        >
+      </div>
+
+      <div class="stat-item">
+        <span class="stat-label">Correct:</span>
+        <span class="stat-value"
+          >{{ currentTraining.correct }} / {{ currentTraining.total }}</span
+        >
+      </div>
+
+      <div class="stat-item">
+        <span class="stat-label">Elapsed Time:</span>
+        <span class="stat-value">{{ getElapsedTime() }}s</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="training-complete" *ngIf="trainingComplete">
+  <div class="complete-icon">✓</div>
+  <h3>Training Complete!</h3>
+  <div class="final-stats">
+    <p class="final-accuracy">
+      Final Accuracy:
+      <strong>{{ finalAccuracy! * 100 | number : "1.2-2" }}%</strong>
+    </p>
+  </div>
+</div>

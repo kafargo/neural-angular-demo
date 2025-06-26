@@ -1,0 +1,112 @@
+<div class="example-display" *ngIf="example" [class.compact]="isCompact">
+  <div class="example-card">
+    <div
+      class="card-header"
+      [class.success]="isCorrectPrediction()"
+      [class.error]="!isCorrectPrediction()"
+    >
+      <h3>
+        {{
+          isCorrectPrediction() ? "Successful" : "Unsuccessful"
+        }}
+        Classification
+      </h3>
+    </div>
+
+    <div class="card-body">
+      <div class="image-section">
+        <h4>Test Image:</h4>
+        <div class="image-container">
+          <img
+            *ngIf="imageLoaded"
+            [src]="sanitizeImageData(example.image_data)"
+            alt="Test digit"
+            class="digit-image"
+            (load)="imageLoaded = true"
+            (error)="handleImageError($event)"
+          />
+          <div *ngIf="!imageLoaded" class="fallback-image">
+            <img
+              src="assets/fallback-digit.png"
+              alt="Fallback digit"
+              class="digit-image"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="prediction-section">
+        <h4>Prediction Results:</h4>
+        <div class="prediction-details">
+          <div class="detail-row">
+            <span class="label">Actual Label:</span>
+            <span class="value actual">{{ example.actual_digit }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Predicted:</span>
+            <span
+              class="value predicted"
+              [class.correct]="isCorrectPrediction()"
+              [class.incorrect]="!isCorrectPrediction()"
+            >
+              {{ example.predicted_digit }}
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Confidence:</span>
+            <span class="value confidence"
+              >{{ getMaxConfidence() | number : "1.1-1" }}%</span
+            >
+          </div>
+
+          <div class="status-indicator">
+            <span
+              class="status"
+              [class.success]="isCorrectPrediction()"
+              [class.failure]="!isCorrectPrediction()"
+            >
+              {{ isCorrectPrediction() ? "✓ Correct" : "✗ Incorrect" }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confidence Breakdown -->
+  <div
+    class="confidence-breakdown"
+    *ngIf="showConfidenceBreakdown && example.network_output"
+  >
+    <h4>All Digit Predictions:</h4>
+    <div class="confidence-bars" [class.compact]="isCompact">
+      <div
+        class="confidence-bar"
+        *ngFor="let confidence of example.network_output; let i = index"
+        [class.predicted]="i === example.predicted_digit"
+        [class.actual]="i === example.actual_digit"
+      >
+        <div class="digit-label">{{ i }}</div>
+        <div class="bar-container">
+          <div
+            class="bar-fill"
+            [style.width.%]="confidence * 100"
+            [class.high-confidence]="confidence > 0.5"
+            [class.medium-confidence]="confidence > 0.2 && confidence <= 0.5"
+            [class.low-confidence]="confidence <= 0.2"
+          ></div>
+        </div>
+        <div class="confidence-value">
+          {{ confidence * 100 | number : "1.0-0" }}%
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="legend-item predicted">■ Predicted</span>
+      <span class="legend-item actual">■ Actual</span>
+    </div>
+  </div>
+</div>

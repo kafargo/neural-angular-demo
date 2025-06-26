@@ -1,0 +1,72 @@
+<section class="learn-section">
+  <div class="learn-header">
+    <h2>Understanding Neural Networks</h2>
+    <p>Learn the fundamentals before creating your own network</p>
+  </div>
+
+  <div class="learn-content">
+    <div class="learn-cards">
+      <div class="learn-card">
+        <h3>What is Machine Learning?</h3>
+        <p>
+          Machine learning is a method of teaching computers to learn patterns
+          from data without being explicitly programmed for every scenario.
+          Neural networks are inspired by how biological neurons work in the
+          brain.
+        </p>
+      </div>
+
+      <div class="learn-card">
+        <h3>MNIST Dataset</h3>
+        <p>
+          We'll use the famous MNIST dataset of handwritten digits (0-9). Each
+          image is 28x28 pixels, giving us 784 input features that our network
+          will learn to classify into 10 categories.
+        </p>
+      </div>
+
+      <div class="learn-card">
+        <h3>How Neural Networks Learn</h3>
+        <p>
+          Networks learn by adjusting weights between neurons based on training
+          examples. Through many iterations, they discover patterns that help
+          them recognize similar images they haven't seen before.
+        </p>
+      </div>
+
+      <div class="learn-card">
+        <h3>Training Process</h3>
+        <p>
+          Training involves showing the network thousands of labeled examples,
+          calculating errors in predictions, and adjusting internal parameters
+          to minimize those errors over time through a process called
+          backpropagation.
+        </p>
+      </div>
+
+      <div class="learn-card">
+        <h3>Network Architecture</h3>
+        <p>
+          Our network will have an input layer (784 neurons for 28x28 pixel
+          images), hidden layers for processing, and an output layer (10 neurons
+          for digits 0-9).
+        </p>
+      </div>
+
+      <div class="learn-card">
+        <h3>Making Predictions</h3>
+        <p>
+          Once trained, the network can classify new handwritten digits by
+          processing pixel values through its learned weights and producing
+          confidence scores for each possible digit (0-9).
+        </p>
+      </div>
+    </div>
+
+    <div class="section-actions">
+      <button class="continue-button" (click)="onContinue()">
+        Continue to Create Network
+      </button>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,105 @@
+<section class="config-section">
+  <div class="config-header">
+    <h2>Create a Network</h2>
+    <p>Configure your neural network architecture</p>
+  </div>
+
+  <div class="config-content">
+    <div class="config-panel">
+      <h3>Configure Network Architecture</h3>
+
+      <div class="layer-config">
+        <div class="layer-item">
+          <label>
+            <span>Hidden Layer 1 Size:</span>
+            <input
+              type="number"
+              [(ngModel)]="config.hiddenLayer1"
+              min="1"
+              max="1000"
+              (change)="onConfigChange()"
+            />
+          </label>
+          <small class="help-text"
+            >Number of neurons in the first hidden layer (1-1000)</small
+          >
+        </div>
+
+        <div class="layer-item">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="config.useSecondLayer"
+              (change)="onConfigChange()"
+            />
+            <span>Use Second Hidden Layer</span>
+          </label>
+          <small class="help-text"
+            >Add an additional processing layer for more complex patterns</small
+          >
+        </div>
+
+        <div class="layer-item" *ngIf="config.useSecondLayer">
+          <label>
+            <span>Hidden Layer 2 Size:</span>
+            <input
+              type="number"
+              [(ngModel)]="config.hiddenLayer2"
+              min="1"
+              max="1000"
+              (change)="onConfigChange()"
+            />
+          </label>
+          <small class="help-text"
+            >Number of neurons in the second hidden layer (1-1000)</small
+          >
+        </div>
+      </div>
+
+      <div class="network-preview">
+        <h4>Network Structure Preview:</h4>
+        <div class="layer-preview">
+          <div class="layer-block input">
+            <span class="layer-label">Input</span>
+            <span class="layer-size">784</span>
+          </div>
+
+          <div class="arrow">→</div>
+
+          <div class="layer-block hidden">
+            <span class="layer-label">Hidden 1</span>
+            <span class="layer-size">{{ config.hiddenLayer1 }}</span>
+          </div>
+
+          <div class="arrow" *ngIf="config.useSecondLayer">→</div>
+
+          <div class="layer-block hidden" *ngIf="config.useSecondLayer">
+            <span class="layer-label">Hidden 2</span>
+            <span class="layer-size">{{ config.hiddenLayer2 }}</span>
+          </div>
+
+          <div class="arrow">→</div>
+
+          <div class="layer-block output">
+            <span class="layer-label">Output</span>
+            <span class="layer-size">10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button
+          class="create-network-button"
+          (click)="createNetwork()"
+          [disabled]="loading"
+        >
+          {{ loading ? "Creating..." : "Create Network" }}
+        </button>
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        {{ error }}
+      </div>
+    </div>
+  </div>
+</section>

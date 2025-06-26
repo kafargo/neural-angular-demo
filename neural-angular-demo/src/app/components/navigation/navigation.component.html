@@ -1,0 +1,61 @@
+<header>
+  <div class="header-content">
+    <h1>Neural Network Demo</h1>
+    <p>Explore how neural networks work with MNIST digit classification</p>
+
+    <!-- Navigation Header -->
+    <nav class="header-navigation">
+      <div
+        class="nav-section"
+        [class.active]="activeSection === 'learn'"
+        [class.clickable]="canNavigateToSection('learn')"
+        (click)="switchSection('learn')"
+      >
+        <span class="nav-number">1</span>
+        <span class="nav-label">Learn About Neural Nets</span>
+      </div>
+
+      <div class="nav-arrow">
+        <img src="assets/right-arrow.svg" alt="arrow" />
+      </div>
+
+      <div
+        class="nav-section"
+        [class.active]="activeSection === 'create'"
+        [class.clickable]="canNavigateToSection('create')"
+        (click)="switchSection('create')"
+      >
+        <span class="nav-number">2</span>
+        <span class="nav-label">Create a Network</span>
+      </div>
+
+      <div class="nav-arrow">
+        <img src="assets/right-arrow.svg" alt="arrow" />
+      </div>
+
+      <div
+        class="nav-section"
+        [class.active]="activeSection === 'train'"
+        [class.clickable]="canNavigateToSection('train')"
+        (click)="switchSection('train')"
+      >
+        <span class="nav-number">3</span>
+        <span class="nav-label">Train a Network</span>
+      </div>
+
+      <div class="nav-arrow">
+        <img src="assets/right-arrow.svg" alt="arrow" />
+      </div>
+
+      <div
+        class="nav-section"
+        [class.active]="activeSection === 'test'"
+        [class.clickable]="canNavigateToSection('test')"
+        (click)="switchSection('test')"
+      >
+        <span class="nav-number">4</span>
+        <span class="nav-label">Test a Network</span>
+      </div>
+    </nav>
+  </div>
+</header>
