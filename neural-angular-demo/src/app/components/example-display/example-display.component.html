@@ -27,9 +27,7 @@
         }"
       >
         <h3>
-          {{
-            currentExample.correct ? "Successful" : "Unsuccessful"
-          }}
+          {{ currentExample.correct ? "Successful" : "Unsuccessful" }}
           Classification
         </h3>
       </div>
@@ -40,13 +38,8 @@
             [src]="currentExample.image_data"
             alt="MNIST Digit"
             class="digit-image"
-            (error)="handleImageError($event)"
-            [ngClass]="{ 'image-load-error': !imageLoaded }"
             crossorigin="anonymous"
           />
-          <div class="fallback-digit" *ngIf="!imageLoaded">
-            {{ currentExample.actual_digit }}
-          </div>
         </div>
 
         <div class="prediction-details">

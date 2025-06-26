@@ -19,9 +19,15 @@ export class NeuralNetworkService {
       // The backend returned an unsuccessful response code
       console.error(
         `Backend returned code ${error.status}, body was: `, error.error);
+      
+      // Special handling for 500 errors on example endpoints
+      if (error.status === 500) {
+        console.warn('Server error (500). This might be because the network is not properly trained or initialized.');
+      }
     }
     // Return an observable with a user-facing error message
-    return throwError(() => new Error('Something went wrong; please try again later.'));
+    const errorMessage = error.error?.message || 'Something went wrong; please try again later.';
+    return throwError(() => new Error(errorMessage));
   }
 
   // Get API status
@@ -56,18 +62,16 @@ export class NeuralNetworkService {
   // Train a network
   trainNetwork(
     networkId: string,
-    epochs: number = 10,
-    miniBatchSize: number = 10,
-    learningRate: number = 3.0
+    trainingConfig: {
+      epochs: number;
+      mini_batch_size: number;
+      learning_rate: number;
+    }
   ): Observable<any> {
-    return this.http.post(`${this.apiUrl}/networks/${networkId}/train`, {
-      epochs,
-      mini_batch_size: miniBatchSize,
-      learning_rate: learningRate,
-    })
-    .pipe(
-      catchError(this.handleError)
-    );
+    return this.http.post(`${this.apiUrl}/networks/${networkId}/train`, trainingConfig)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
 
   // Get training status
@@ -142,5 +146,14 @@ export class NeuralNetworkService {
       retry(1),
       catchError(this.handleError)
     );
+  }
+
+  // Get either successful or unsuccessful examples based on parameter
+  getExamples(networkId: string, successful: boolean): Observable<any> {
+    if (successful) {
+      return this.getSuccessfulExample(networkId);
+    } else {
+      return this.getUnsuccessfulExample(networkId);
+    }
   }
 }

@@ -82,10 +82,7 @@
     </div>
 
     <!-- Enhanced WebSocket training details -->
-    <div
-      *ngIf="currentTraining && connectionStatus.connected"
-      class="enhanced-progress-details"
-    >
+    <div *ngIf="currentTraining" class="enhanced-progress-details">
       <div class="training-detail-row">
         <span class="detail-label">Progress:</span>
         <span class="detail-value">{{ trainingProgress }}%</span>

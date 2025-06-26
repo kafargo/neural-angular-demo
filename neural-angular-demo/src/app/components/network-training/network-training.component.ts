@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable, Subscription, interval } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
 import { switchMap, takeWhile, finalize } from 'rxjs/operators';
 import { NeuralNetworkService } from '../../services/neural-network.service';
 import { TrainingWebSocketService, TrainingUpdate, ConnectionStatus } from '../../services/websocket/training-websocket.service';
@@ -77,10 +77,12 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
     }
     
     this.neuralNetworkService.trainNetwork(
-      this.networkId,
-      this.epochs,
-      this.miniBatchSize,
-      this.learningRate
+      this.networkId, 
+      {
+        epochs: this.epochs,
+        mini_batch_size: this.miniBatchSize,
+        learning_rate: this.learningRate
+      }
     ).subscribe({
       next: (response) => {
         this.loading = false;
@@ -116,10 +118,17 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
           
           console.log('WebSocket training update received for job', this.jobId, update);
           
-          // Update component state with real-time information
+          // Use the exact values from the update object without modification
           this.currentTraining = update;
+          
+          // Directly use the progress value from the event
           this.trainingProgress = update.progress;
+          
+          // Directly use the accuracy value from the event
           this.currentAccuracy = update.accuracy;
+          
+          // All other values (correct, total, elapsed_time, etc.) will be accessed
+          // directly from the currentTraining object in the template
           
           // Check if training is complete (last epoch received)
           if (update.epoch === update.total_epochs) {
@@ -133,6 +142,10 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
               this.trainingSubscription.unsubscribe();
               this.trainingSubscription = null;
             }
+            
+            // Verify network stats before allowing example loading
+            // Add a slight delay to ensure the training has fully completed on the server
+            setTimeout(() => this.checkNetworkStats(), 1000);
           }
         },
         error: (error) => {
@@ -160,14 +173,33 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           console.log('Polling training status:', response);
-          this.trainingProgress = response.progress || 0;
-          this.currentAccuracy = response.accuracy;
+          
+          // Format the response from polling to match the TrainingUpdate interface
+          this.currentTraining = {
+            job_id: this.jobId,
+            network_id: this.networkId,
+            epoch: response.current_epoch || 0,
+            total_epochs: this.epochs,
+            accuracy: response.accuracy,
+            elapsed_time: response.elapsed_time || 0,
+            progress: response.progress || 0,
+            correct: response.correct || 0,
+            total: response.total || 0
+          };
+          
+          // Use values directly from the response
+          this.trainingProgress = this.currentTraining.progress;
+          this.currentAccuracy = this.currentTraining.accuracy;
           
           if (response.status === 'completed') {
             this.trainingComplete = true;
-            this.finalAccuracy = response.accuracy;
+            this.finalAccuracy = this.currentTraining.accuracy;
             this.trainingStatusChanged.emit(false);
             console.log('Training complete via polling');
+            
+            // Verify network stats before allowing example loading
+            // Add a slight delay to ensure the training has fully completed on the server
+            setTimeout(() => this.checkNetworkStats(), 1000);
           } else if (response.status === 'failed') {
             this.error = 'Training failed. Please try again.';
             this.trainingStarted = false;
@@ -187,5 +219,26 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
 
   showExamples(): void {
     this.showExamplesRequested.emit();
+  }
+  
+  // Check network status after training completion
+  checkNetworkStats(): void {
+    console.log('Verifying network status after training...');
+    this.neuralNetworkService.getNetworkStats(this.networkId).subscribe({
+      next: (stats) => {
+        console.log('Network stats retrieved:', stats);
+        // Emit an event with network stats to notify parent components
+        if (stats && stats.accuracy) {
+          this.finalAccuracy = stats.accuracy;
+          this.showExamplesRequested.emit();
+        } else {
+          console.warn('Network stats retrieved but no accuracy data found');
+        }
+      },
+      error: (error) => {
+        console.error('Error getting network stats:', error);
+        this.error = 'Failed to verify network status. Examples may not load correctly.';
+      }
+    });
   }
 }
