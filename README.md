@@ -62,9 +62,9 @@ The application demonstrates key concepts including:
 4. **Open your browser**
    Navigate to `http://localhost:4200/`
 
-## 🚀 Railway Deployment
+## 🚀 Deployment
 
-This application is configured for easy deployment to Railway. For detailed deployment instructions, see the [Railway Deployment Guide](RAILWAY_DEPLOYMENT.md).
+This application is configured for deployment to Railway or similar platforms.
 
 ### Quick Deploy to Railway
 
@@ -84,9 +84,23 @@ This application is configured for easy deployment to Railway. For detailed depl
 The application includes:
 
 - Pre-configured `railway.json` deployment settings
-- Express server for serving the built Angular app
+- Express server (`server.js`) for serving the built Angular app
 - Environment-specific configurations
 - Production build optimizations
+
+### Backend API Requirement
+
+This frontend application requires a separate backend API server for neural network operations. The backend should provide:
+
+- Network creation and management endpoints
+- MNIST dataset training capabilities
+- Real-time training progress via WebSocket/Socket.IO
+- Prediction endpoints for testing
+
+Configure the API URLs in the environment files:
+
+- Development: [`neural-angular-demo/src/environments/environment.ts`](neural-angular-demo/src/environments/environment.ts)
+- Production: [`neural-angular-demo/src/environments/environment.prod.ts`](neural-angular-demo/src/environments/environment.prod.ts)
 
 ## 🏗️ Architecture
 
@@ -99,28 +113,40 @@ The application includes:
 
 ### Backend API
 
-- **Production**: `https://neural-network-intro-production.up.railway.app/`
+The application connects to a backend API for neural network operations:
+
+- **Development**: `http://localhost:8000/api` (configurable in environment files)
+- **Production**: Configured via environment variables
 - **Features**: Network creation, training, testing, and real-time progress updates
-- **Documentation**: See `api-documentation.md` for complete API reference
+- **Technology**: REST API + Socket.IO for real-time training updates
 
 ### Project Structure
 
 ```
-neural-angular-demo/
-├── src/
-│   ├── app/
-│   │   ├── components/           # UI components
-│   │   │   ├── learn/           # Educational content
-│   │   │   ├── network-config/  # Network architecture setup
-│   │   │   ├── network-training/# Training interface
-│   │   │   ├── network-test/    # Testing interface
-│   │   │   └── ...
-│   │   ├── services/            # API and WebSocket services
-│   │   ├── interfaces/          # TypeScript type definitions
-│   │   └── interceptors/        # HTTP interceptors
-│   └── assets/                  # Static assets
-├── api-documentation.md         # Complete API reference
-└── README.md                   # This file
+neural-angular-demo/           # Root workspace
+├── neural-angular-demo/       # Angular application
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── components/           # UI components
+│   │   │   │   ├── learn/           # Educational content
+│   │   │   │   ├── network-config/  # Network architecture setup
+│   │   │   │   ├── network-training/# Training interface
+│   │   │   │   ├── network-test/    # Testing interface
+│   │   │   │   ├── training-progress/ # Training visualization
+│   │   │   │   ├── example-display/ # Test examples
+│   │   │   │   └── navigation/      # App navigation
+│   │   │   ├── services/            # API and WebSocket services
+│   │   │   │   └── websocket/       # Training WebSocket service
+│   │   │   ├── interfaces/          # TypeScript type definitions
+│   │   │   └── interceptors/        # HTTP interceptors
+│   │   ├── environments/            # Environment configurations
+│   │   └── assets/                  # Static assets
+│   ├── server.js                    # Express server for production
+│   ├── angular.json                 # Angular configuration
+│   └── package.json                 # Dependencies
+├── railway.json                     # Railway deployment config
+├── nixpacks.toml                    # Nixpacks configuration
+└── README.md                        # This file
 ```
 
 ## 🎯 Features
@@ -237,9 +263,10 @@ This project is open source and available under the [MIT License](LICENSE).
 
 If you have questions, suggestions, or run into issues:
 
-1. Check the [API Documentation](api-documentation.md) for backend-related questions
-2. Review the Angular project's README in the `neural-angular-demo/` directory
-3. Open an issue on GitHub for bugs or feature requests
+1. Review the environment configuration files for API connection settings
+2. Check the [Angular project README](neural-angular-demo/README.md) for Angular-specific documentation
+3. Ensure the backend API server is running and accessible
+4. Open an issue on GitHub for bugs or feature requests
 
 ---
 
