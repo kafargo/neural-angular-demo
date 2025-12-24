@@ -90,12 +90,39 @@ The application includes:
 
 ### Backend API Requirement
 
-This frontend application requires a separate backend API server for neural network operations. The backend should provide:
+This frontend application requires a separate backend API server for neural network operations.
 
-- Network creation and management endpoints
-- MNIST dataset training capabilities
-- Real-time training progress via WebSocket/Socket.IO
-- Prediction endpoints for testing
+#### Required Backend Endpoints
+
+The backend **must** implement these 5 endpoints:
+
+1. **POST** `/api/networks`
+
+   - Create a new neural network
+   - Body: `{ layer_sizes: number[] }`
+   - Returns: Network ID and metadata
+
+2. **POST** `/api/networks/{networkId}/train`
+
+   - Start training a network
+   - Body: `{ epochs: number, mini_batch_size: number, learning_rate: number }`
+   - Returns: Training job ID
+
+3. **GET** `/api/networks/{networkId}/successful_example`
+
+   - Get a successfully classified MNIST example
+   - Returns: Example image data and prediction
+
+4. **GET** `/api/networks/{networkId}/unsuccessful_example`
+
+   - Get a misclassified MNIST example
+   - Returns: Example image data and prediction
+
+5. **WebSocket** `training_update` event (Socket.IO)
+   - Real-time training progress updates
+   - Payload: `{ job_id, network_id, epoch, accuracy, progress, elapsed_time }`
+
+#### Configuration
 
 Configure the API URLs in the environment files:
 

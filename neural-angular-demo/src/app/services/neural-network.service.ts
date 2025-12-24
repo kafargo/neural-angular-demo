@@ -5,14 +5,8 @@ import { catchError, retry } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { LoggerService } from './logger.service';
 import {
-  ApiStatus,
   NetworkCreateResponse,
-  NetworkListResponse,
   TrainResponse,
-  TrainingStatusResponse,
-  NetworkStatsResponse,
-  PredictResponse,
-  NetworkVisualization,
   NetworkExample
 } from '../interfaces/neural-network.interface';
 
@@ -46,16 +40,10 @@ export class NeuralNetworkService {
     return throwError(() => new Error(errorMessage));
   }
 
-  // Get API status
-  getStatus(): Observable<ApiStatus> {
-    return this.http.get<ApiStatus>(`${this.apiUrl}/status`)
-      .pipe(
-        retry(1),
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  // Create a new network
+  /**
+   * Create a new neural network with specified layer sizes
+   * Used by: NetworkConfigComponent
+   */
   createNetwork(layerSizes: number[] = [784, 128, 64, 10]): Observable<NetworkCreateResponse> {
     return this.http.post<NetworkCreateResponse>(`${this.apiUrl}/networks`, {
       layer_sizes: layerSizes,
@@ -66,16 +54,10 @@ export class NeuralNetworkService {
     );
   }
 
-  // List all networks
-  listNetworks(): Observable<NetworkListResponse> {
-    return this.http.get<NetworkListResponse>(`${this.apiUrl}/networks`)
-      .pipe(
-        retry(1),
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  // Train a network
+  /**
+   * Train a network with specified configuration
+   * Used by: NetworkTrainingComponent
+   */
   trainNetwork(
     networkId: string,
     trainingConfig: {
@@ -90,56 +72,11 @@ export class NeuralNetworkService {
       );
   }
 
-  // Get training status
-  getTrainingStatus(jobId: string): Observable<TrainingStatusResponse> {
-    return this.http.get<TrainingStatusResponse>(`${this.apiUrl}/training/${jobId}`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  // Get network statistics
-  getNetworkStats(networkId: string): Observable<NetworkStatsResponse> {
-    return this.http.get<NetworkStatsResponse>(`${this.apiUrl}/networks/${networkId}/stats`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  // Predict a single example
-  predict(networkId: string, exampleIndex: number): Observable<PredictResponse> {
-    return this.http.post<PredictResponse>(`${this.apiUrl}/networks/${networkId}/predict`, {
-      example_index: exampleIndex,
-    })
-    .pipe(
-      catchError(this.handleError.bind(this))
-    );
-  }
-
-  // Get network visualization
-  getVisualization(networkId: string): Observable<NetworkVisualization> {
-    return this.http.get<NetworkVisualization>(`${this.apiUrl}/networks/${networkId}/visualize`)
-      .pipe(
-        catchError(this.handleError.bind(this))
-      );
-  }
-
-  // Get misclassified examples
-  getMisclassifiedExamples(
-    networkId: string,
-    maxCount: number = 10,
-    maxCheck: number = 500
-  ): Observable<NetworkExample[]> {
-    return this.http.get<NetworkExample[]>(
-      `${this.apiUrl}/networks/${networkId}/misclassified?max_count=${maxCount}&max_check=${maxCheck}`
-    )
-    .pipe(
-      catchError(this.handleError.bind(this))
-    );
-  }
-
-  // Get successful example
-  getSuccessfulExample(networkId: string): Observable<NetworkExample> {
+  /**
+   * Get a successfully classified example
+   * Used by: NetworkTestComponent
+   */
+  private getSuccessfulExample(networkId: string): Observable<NetworkExample> {
     return this.http.get<NetworkExample>(`${this.apiUrl}/networks/${networkId}/successful_example`, {
       headers: {
         'Accept': 'application/json, text/plain, */*'
@@ -150,8 +87,11 @@ export class NeuralNetworkService {
     );
   }
 
-  // Get unsuccessful example
-  getUnsuccessfulExample(networkId: string): Observable<NetworkExample> {
+  /**
+   * Get an unsuccessfully classified example
+   * Used by: NetworkTestComponent
+   */
+  private getUnsuccessfulExample(networkId: string): Observable<NetworkExample> {
     return this.http.get<NetworkExample>(`${this.apiUrl}/networks/${networkId}/unsuccessful_example`, {
       headers: {
         'Accept': 'application/json, text/plain, */*'
@@ -162,7 +102,10 @@ export class NeuralNetworkService {
     );
   }
 
-  // Get either successful or unsuccessful examples based on parameter
+  /**
+   * Get either successful or unsuccessful examples based on parameter
+   * Used by: NetworkTestComponent
+   */
   getExamples(networkId: string, successful: boolean): Observable<NetworkExample> {
     if (successful) {
       return this.getSuccessfulExample(networkId);
