@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const app = express();
 const port = process.env.PORT || 3000;
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === "production";
 
 // Check if build directory exists
 const distPath = path.join(__dirname, "dist/neural-angular-demo/browser");
