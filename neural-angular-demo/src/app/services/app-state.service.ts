@@ -80,4 +80,23 @@ export class AppStateService {
   setFinalAccuracy(accuracy: number | null): void {
     this.finalAccuracySubject.next(accuracy);
   }
+
+  // Clear all state - useful for page refresh or reset
+  clearAllState(): void {
+    this.activeSectionSubject.next('learn');
+    this.networkIdSubject.next('');
+    this.networkConfigSubject.next({
+      hiddenLayer1: 128,
+      hiddenLayer2: 64,
+      useSecondLayer: true,
+      layerSizes: [784, 128, 64, 10]
+    });
+    this.trainingConfigSubject.next({
+      epochs: 10,
+      miniBatchSize: 10,
+      learningRate: 3.0
+    });
+    this.trainingCompleteSubject.next(false);
+    this.finalAccuracySubject.next(null);
+  }
 }

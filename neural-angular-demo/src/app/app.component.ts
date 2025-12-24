@@ -23,19 +23,36 @@ import { AppSection, NetworkConfig, TrainingConfig } from './interfaces/neural-n
 })
 export class AppComponent implements OnInit {
   title = 'Neural Network Demo';
+  private readonly NAVIGATION_FLAG = 'app_navigation_active';
 
   constructor(
     private router: Router,
     private neuralNetworkService: NeuralNetworkService,
     public appState: AppStateService
-  ) {}
+  ) {
+    // Set flag before unload to distinguish navigation from refresh
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.removeItem(this.NAVIGATION_FLAG);
+    });
+  }
 
   ngOnInit(): void {
-    // Component initialization
+    // Check if this is a page refresh (not a normal navigation)
+    const isNavigation = sessionStorage.getItem(this.NAVIGATION_FLAG);
+    
+    if (!isNavigation) {
+      // This is a page refresh - clear all state and redirect to landing page
+      this.appState.clearAllState();
+      this.router.navigate(['/learn']);
+    }
+    
+    // Set flag for subsequent navigations
+    sessionStorage.setItem(this.NAVIGATION_FLAG, 'true');
   }
 
   // Navigation Methods
   onSectionChange(section: AppSection): void {
+    sessionStorage.setItem(this.NAVIGATION_FLAG, 'true');
     this.appState.setActiveSection(section);
     this.router.navigate([`/${section}`]);
   }
@@ -50,11 +67,13 @@ export class AppComponent implements OnInit {
   }
 
   onContinueToCreate(): void {
+    sessionStorage.setItem(this.NAVIGATION_FLAG, 'true');
     this.appState.setActiveSection('create');
     this.router.navigate(['/create']);
   }
 
   onContinueToTrain(): void {
+    sessionStorage.setItem(this.NAVIGATION_FLAG, 'true');
     this.appState.setActiveSection('train');
     this.router.navigate(['/train']);
   }
@@ -70,6 +89,7 @@ export class AppComponent implements OnInit {
   }
 
   onContinueToTest(): void {
+    sessionStorage.setItem(this.NAVIGATION_FLAG, 'true');
     this.appState.setActiveSection('test');
     this.router.navigate(['/test']);
   }
