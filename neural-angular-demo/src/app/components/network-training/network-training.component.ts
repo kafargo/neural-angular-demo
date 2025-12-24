@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { NeuralNetworkService } from '../../services/neural-network.service';
 import { AppStateService } from '../../services/app-state.service';
+import { LoggerService } from '../../services/logger.service';
 import { TrainingProgressComponent } from '../training-progress/training-progress.component';
 import { TrainingConfig, TrainingUpdate } from '../../interfaces/neural-network.interface';
 
@@ -14,7 +16,10 @@ import { TrainingConfig, TrainingUpdate } from '../../interfaces/neural-network.
   templateUrl: './network-training.component.html',
   styleUrls: ['./network-training.component.css']
 })
-export class NetworkTrainingComponent implements OnInit {
+export class NetworkTrainingComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private trainingInterval?: ReturnType<typeof setInterval>;
+  
   networkId = '';
   trainingConfig: TrainingConfig = {
     epochs: 10,
@@ -33,7 +38,8 @@ export class NetworkTrainingComponent implements OnInit {
   constructor(
     private router: Router,
     private neuralNetworkService: NeuralNetworkService,
-    private appState: AppStateService
+    private appState: AppStateService,
+    private logger: LoggerService
   ) {}
 
   ngOnInit(): void {
@@ -41,6 +47,14 @@ export class NetworkTrainingComponent implements OnInit {
     this.networkId = this.appState.networkId;
     this.trainingConfig = { ...this.appState.trainingConfig };
     this.finalAccuracy = this.appState.finalAccuracy;
+  }
+
+  ngOnDestroy(): void {
+    if (this.trainingInterval) {
+      clearInterval(this.trainingInterval);
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onConfigChange(): void {
@@ -62,19 +76,21 @@ export class NetworkTrainingComponent implements OnInit {
       learning_rate: this.trainingConfig.learningRate
     };
     
-    this.neuralNetworkService.trainNetwork(this.networkId, config).subscribe({
-      next: (response) => {
-        this.trainingStarted = true;
-        this.isTraining = true;
-        this.trainingLoading = false;
-        this.monitorTrainingProgress();
-      },
-      error: (error) => {
-        console.error('Error starting training:', error);
-        this.trainingLoading = false;
-        this.error = 'Failed to start training. Please try again.';
-      }
-    });
+    this.neuralNetworkService.trainNetwork(this.networkId, config)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.trainingStarted = true;
+          this.isTraining = true;
+          this.trainingLoading = false;
+          this.monitorTrainingProgress();
+        },
+        error: (error) => {
+          this.logger.error('Error starting training:', error);
+          this.trainingLoading = false;
+          this.error = 'Failed to start training. Please try again.';
+        }
+      });
   }
 
   private monitorTrainingProgress(): void {
@@ -82,7 +98,7 @@ export class NetworkTrainingComponent implements OnInit {
     let progress = 0;
     let currentEpoch = 1;
     
-    const interval = setInterval(() => {
+    this.trainingInterval = setInterval(() => {
       const progressPerEpoch = 100 / this.trainingConfig.epochs;
       progress = Math.min(currentEpoch * progressPerEpoch, 100);
       this.trainingProgress = progress;
@@ -105,7 +121,9 @@ export class NetworkTrainingComponent implements OnInit {
       };
       
       if (currentEpoch >= this.trainingConfig.epochs) {
-        clearInterval(interval);
+        if (this.trainingInterval) {
+          clearInterval(this.trainingInterval);
+        }
         this.completeTraining();
       } else {
         currentEpoch++;

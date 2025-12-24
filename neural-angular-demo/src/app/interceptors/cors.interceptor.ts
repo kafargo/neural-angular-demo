@@ -1,12 +1,16 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const corsInterceptor: HttpInterceptorFn = (req, next) => {
-  // Only add json headers for json endpoints, not for images
+  // Don't modify headers for GET requests - Angular handles them correctly
+  // Only set Content-Type for POST/PUT/PATCH requests if not already set
+  if (req.method === 'GET' || req.headers.has('Content-Type')) {
+    return next(req);
+  }
+
+  // For non-GET requests without Content-Type, set application/json
   const corsReq = req.clone({
     setHeaders: {
-      // Set appropriate headers based on the request type
-      'Content-Type': req.url.includes('/image') ? 'image/png' : 'application/json',
-      'Accept': req.url.includes('/image') ? 'image/png' : 'application/json, text/plain, */*'
+      'Content-Type': 'application/json'
     },
   });
 

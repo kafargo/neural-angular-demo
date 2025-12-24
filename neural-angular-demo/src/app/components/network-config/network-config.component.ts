@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { NeuralNetworkService } from '../../services/neural-network.service';
 import { AppStateService } from '../../services/app-state.service';
+import { LoggerService } from '../../services/logger.service';
 import { NetworkConfig } from '../../interfaces/neural-network.interface';
 
 @Component({
@@ -13,7 +15,9 @@ import { NetworkConfig } from '../../interfaces/neural-network.interface';
   templateUrl: './network-config.component.html',
   styleUrls: ['./network-config.component.css']
 })
-export class NetworkConfigComponent implements OnInit {
+export class NetworkConfigComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
   config: NetworkConfig = {
     hiddenLayer1: 128,
     hiddenLayer2: 64,
@@ -27,12 +31,18 @@ export class NetworkConfigComponent implements OnInit {
   constructor(
     private router: Router,
     private neuralNetworkService: NeuralNetworkService,
-    private appState: AppStateService
+    private appState: AppStateService,
+    private logger: LoggerService
   ) {}
 
   ngOnInit(): void {
     // Load the current config from the state service
     this.config = { ...this.appState.networkConfig };
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onConfigChange(): void {
@@ -56,18 +66,20 @@ export class NetworkConfigComponent implements OnInit {
     
     this.updateLayerSizes();
     
-    this.neuralNetworkService.createNetwork(this.config.layerSizes).subscribe({
-      next: (response) => {
-        this.loading = false;
-        this.appState.setNetworkId(response.network_id);
-        this.appState.setActiveSection('train');
-        this.router.navigate(['/train']);
-      },
-      error: (error) => {
-        console.error('Error creating network:', error);
-        this.loading = false;
-        this.error = 'Failed to create network. Please try again.';
-      }
-    });
+    this.neuralNetworkService.createNetwork(this.config.layerSizes)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.appState.setNetworkId(response.network_id);
+          this.appState.setActiveSection('train');
+          this.router.navigate(['/train']);
+        },
+        error: (error) => {
+          this.logger.error('Error creating network:', error);
+          this.loading = false;
+          this.error = 'Failed to create network. Please try again.';
+        }
+      });
   }
 }

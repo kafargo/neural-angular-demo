@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 import { NeuralNetworkService } from '../../services/neural-network.service';
 import { AppStateService } from '../../services/app-state.service';
+import { LoggerService } from '../../services/logger.service';
 import { ExampleDisplayComponent } from '../example-display/example-display.component';
 import { NetworkExample } from '../../interfaces/neural-network.interface';
 
@@ -12,7 +14,9 @@ import { NetworkExample } from '../../interfaces/neural-network.interface';
   templateUrl: './network-test.component.html',
   styleUrls: ['./network-test.component.css']
 })
-export class NetworkTestComponent implements OnInit {
+export class NetworkTestComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
   networkId = '';
 
   currentExample: NetworkExample | null = null;
@@ -24,12 +28,18 @@ export class NetworkTestComponent implements OnInit {
 
   constructor(
     private neuralNetworkService: NeuralNetworkService,
-    private appState: AppStateService
+    private appState: AppStateService,
+    private logger: LoggerService
   ) {}
 
   ngOnInit(): void {
     // Load network ID from the state service
     this.networkId = this.appState.networkId;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadRandomExample(): void {
@@ -50,20 +60,22 @@ export class NetworkTestComponent implements OnInit {
     this.loadingExample = true;
     this.error = null;
     
-    this.neuralNetworkService.getExamples(this.networkId, true).subscribe({
-      next: (example) => {
-        this.currentExample = {
-          ...example,
-          correct: true
-        };
-        this.loadingExample = false;
-      },
-      error: (error) => {
-        console.error('Error loading successful example:', error);
-        this.loadingExample = false;
-        this.createFallbackExample(true);
-      }
-    });
+    this.neuralNetworkService.getExamples(this.networkId, true)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (example) => {
+          this.currentExample = {
+            ...example,
+            correct: true
+          };
+          this.loadingExample = false;
+        },
+        error: (error) => {
+          this.logger.error('Error loading successful example:', error);
+          this.loadingExample = false;
+          this.createFallbackExample(true);
+        }
+      });
   }
 
   loadUnsuccessfulExample(): void {
@@ -75,20 +87,22 @@ export class NetworkTestComponent implements OnInit {
     this.loadingExample = true;
     this.error = null;
     
-    this.neuralNetworkService.getExamples(this.networkId, false).subscribe({
-      next: (example) => {
-        this.currentExample = {
-          ...example,
-          correct: false
-        };
-        this.loadingExample = false;
-      },
-      error: (error) => {
-        console.error('Error loading unsuccessful example:', error);
-        this.loadingExample = false;
-        this.createFallbackExample(false);
-      }
-    });
+    this.neuralNetworkService.getExamples(this.networkId, false)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (example) => {
+          this.currentExample = {
+            ...example,
+            correct: false
+          };
+          this.loadingExample = false;
+        },
+        error: (error) => {
+          this.logger.error('Error loading unsuccessful example:', error);
+          this.loadingExample = false;
+          this.createFallbackExample(false);
+        }
+      });
   }
 
   generateExamples(): void {
@@ -103,34 +117,38 @@ export class NetworkTestComponent implements OnInit {
 
   private loadExamplesForDisplay(): void {
     // Load success examples
-    this.neuralNetworkService.getExamples(this.networkId, true).subscribe({
-      next: (examples) => {
-        if (Array.isArray(examples)) {
-          this.successExamples = examples.slice(0, 3).map(ex => ({ ...ex, correct: true }));
-        } else {
-          this.successExamples = [{ ...examples, correct: true }];
+    this.neuralNetworkService.getExamples(this.networkId, true)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (examples) => {
+          if (Array.isArray(examples)) {
+            this.successExamples = examples.slice(0, 3).map(ex => ({ ...ex, correct: true }));
+          } else {
+            this.successExamples = [{ ...examples, correct: true }];
+          }
+        },
+        error: (error) => {
+          this.logger.error('Error loading success examples:', error);
+          this.successExamples = this.createFallbackExamples(true, 3);
         }
-      },
-      error: (error) => {
-        console.error('Error loading success examples:', error);
-        this.successExamples = this.createFallbackExamples(true, 3);
-      }
-    });
+      });
 
     // Load failure examples
-    this.neuralNetworkService.getExamples(this.networkId, false).subscribe({
-      next: (examples) => {
-        if (Array.isArray(examples)) {
-          this.failureExamples = examples.slice(0, 3).map(ex => ({ ...ex, correct: false }));
-        } else {
-          this.failureExamples = [{ ...examples, correct: false }];
+    this.neuralNetworkService.getExamples(this.networkId, false)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (examples) => {
+          if (Array.isArray(examples)) {
+            this.failureExamples = examples.slice(0, 3).map(ex => ({ ...ex, correct: false }));
+          } else {
+            this.failureExamples = [{ ...examples, correct: false }];
+          }
+        },
+        error: (error) => {
+          this.logger.error('Error loading failure examples:', error);
+          this.failureExamples = this.createFallbackExamples(false, 3);
         }
-      },
-      error: (error) => {
-        console.error('Error loading failure examples:', error);
-        this.failureExamples = this.createFallbackExamples(false, 3);
-      }
-    });
+      });
   }
 
   private createFallbackExample(isSuccessful: boolean): void {

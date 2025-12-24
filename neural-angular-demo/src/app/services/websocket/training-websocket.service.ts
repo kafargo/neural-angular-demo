@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { LoggerService } from '../logger.service';
 
 export interface TrainingUpdate {
   job_id: string;
@@ -33,7 +34,7 @@ export class TrainingWebSocketService implements OnDestroy {
   // Production server URL based on the documentation
   private serverUrl = environment.websocketUrl;
 
-  constructor() {
+  constructor(private logger: LoggerService) {
     this.initializeConnection();
   }
 
@@ -48,7 +49,7 @@ export class TrainingWebSocketService implements OnDestroy {
 
     // Connection event handlers
     this.socket.on('connect', () => {
-      console.log('Connected to training WebSocket:', this.socket.id);
+      this.logger.log('Connected to training WebSocket:', this.socket.id);
       this.connectionStatus.next({
         connected: true,
         socketId: this.socket.id
@@ -56,18 +57,18 @@ export class TrainingWebSocketService implements OnDestroy {
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('Disconnected from training WebSocket:', reason);
+      this.logger.log('Disconnected from training WebSocket:', reason);
       this.connectionStatus.next({ connected: false });
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
+      this.logger.error('WebSocket connection error:', error);
       this.connectionStatus.next({ connected: false });
     });
 
     // Training update handler
     this.socket.on('training_update', (data: TrainingUpdate) => {
-      console.log('Training update received via WebSocket:', data);
+      this.logger.log('Training update received via WebSocket:', data);
       this.trainingUpdates.next(data);
     });
   }

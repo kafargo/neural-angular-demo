@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { NetworkExample } from '../../interfaces/neural-network.interface';
+import { LoggerService } from '../../services/logger.service';
 
 @Component({
   selector: 'app-example-display',
@@ -17,7 +18,10 @@ export class ExampleDisplayComponent {
 
   imageLoaded = true;
 
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(
+    private sanitizer: DomSanitizer,
+    private logger: LoggerService
+  ) {}
 
   sanitizeImageData(imageData: string): SafeResourceUrl {
     if (!imageData) return this.sanitizer.bypassSecurityTrustResourceUrl('');
@@ -46,7 +50,7 @@ export class ExampleDisplayComponent {
   }
 
   handleImageError(event: any): void {
-    console.error('Image failed to load:', event);
+    this.logger.error('Image failed to load:', event);
     this.imageLoaded = false;
   }
 }
