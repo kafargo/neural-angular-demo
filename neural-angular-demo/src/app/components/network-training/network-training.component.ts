@@ -54,7 +54,11 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
     this.websocketService.getTrainingUpdates()
       .pipe(takeUntil(this.destroy$))
       .subscribe(update => {
-        if (update && this.currentJobId && update.job_id === this.currentJobId) {
+        if (update && (!this.currentJobId || update.job_id === this.currentJobId)) {
+          // Accept updates if we don't have a job ID yet, or if it matches
+          if (!this.currentJobId && this.isTraining) {
+            this.currentJobId = update.job_id;
+          }
           this.handleTrainingUpdate(update);
         }
       });
@@ -63,7 +67,7 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
     this.websocketService.getTrainingComplete()
       .pipe(takeUntil(this.destroy$))
       .subscribe(completion => {
-        if (completion && this.currentJobId && completion.job_id === this.currentJobId) {
+        if (completion && (!this.currentJobId || completion.job_id === this.currentJobId)) {
           this.handleTrainingComplete(completion);
         }
       });
@@ -72,7 +76,7 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
     this.websocketService.getTrainingError()
       .pipe(takeUntil(this.destroy$))
       .subscribe(error => {
-        if (error && this.currentJobId && error.job_id === this.currentJobId) {
+        if (error && (!this.currentJobId || error.job_id === this.currentJobId)) {
           this.handleTrainingError(error);
         }
       });
@@ -133,7 +137,7 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
   }
 
   private handleTrainingComplete(completion: any): void {
-    this.logger.log('Training completed:', completion);
+    this.logger.log('✅ Training completed successfully:', completion);
     
     // Now we can safely mark training as complete
     this.isTraining = false;
@@ -150,7 +154,7 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
   }
 
   private handleTrainingError(error: any): void {
-    this.logger.error('Training error:', error);
+    this.logger.error('❌ Training error:', error);
     
     // Mark training as stopped
     this.isTraining = false;
