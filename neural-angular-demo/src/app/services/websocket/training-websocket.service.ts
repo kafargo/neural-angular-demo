@@ -56,17 +56,25 @@ export class TrainingWebSocketService implements OnDestroy {
   }
 
   private initializeConnection(): void {
+    this.logger.log('Attempting to connect to WebSocket:', this.serverUrl);
+    
     this.socket = io(this.serverUrl, {
-      transports: ['websocket', 'polling'], // Fallback to polling if WebSocket fails
-      timeout: 20000,
+      transports: ['polling', 'websocket'], // Try polling first, then upgrade to websocket
+      timeout: 60000, // Increase timeout to 60 seconds
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
+      randomizationFactor: 0.5,
+      path: '/socket.io/',
+      autoConnect: true,
+      forceNew: false,
+      multiplex: true,
     });
 
     // Connection event handlers
     this.socket.on('connect', () => {
-      this.logger.log('Connected to training WebSocket:', this.socket.id);
+      this.logger.log('✅ Connected to training WebSocket:', this.socket.id);
       this.connectionStatus.next({
         connected: true,
         socketId: this.socket.id
@@ -74,13 +82,23 @@ export class TrainingWebSocketService implements OnDestroy {
     });
 
     this.socket.on('disconnect', (reason) => {
-      this.logger.log('Disconnected from training WebSocket:', reason);
+      this.logger.log('⚠️ Disconnected from training WebSocket:', reason);
       this.connectionStatus.next({ connected: false });
     });
 
     this.socket.on('connect_error', (error) => {
-      this.logger.error('WebSocket connection error:', error);
+      this.logger.error('❌ WebSocket connection error:', error);
+      this.logger.error('Server URL:', this.serverUrl);
+      this.logger.error('Transports:', this.socket.io.opts.transports);
       this.connectionStatus.next({ connected: false });
+    });
+
+    this.socket.on('reconnect_attempt', (attempt) => {
+      this.logger.log(`🔄 Reconnection attempt ${attempt}...`);
+    });
+
+    this.socket.on('reconnect_failed', () => {
+      this.logger.error('❌ Reconnection failed after all attempts');
     });
 
     // Training update handler
