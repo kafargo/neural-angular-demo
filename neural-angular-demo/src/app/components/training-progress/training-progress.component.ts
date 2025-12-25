@@ -16,7 +16,7 @@ export class TrainingProgressComponent {
   @Input() finalAccuracy: number | null = null;
 
   getAccuracyPercentage(): number {
-    return this.currentTraining ? this.currentTraining.accuracy * 100 : 0;
+    return (this.currentTraining?.accuracy ?? 0) * 100;
   }
 
   getElapsedTime(): string {

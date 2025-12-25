@@ -16,6 +16,21 @@ export interface TrainingUpdate {
   total?: number;
 }
 
+export interface TrainingComplete {
+  job_id: string;
+  network_id: string;
+  status: string;
+  accuracy: number;
+  message: string;
+}
+
+export interface TrainingError {
+  job_id: string;
+  network_id: string;
+  status: string;
+  error: string;
+}
+
 export interface ConnectionStatus {
   connected: boolean;
   socketId?: string;
@@ -30,6 +45,8 @@ export class TrainingWebSocketService implements OnDestroy {
     connected: false
   });
   private trainingUpdates = new BehaviorSubject<TrainingUpdate | null>(null);
+  private trainingComplete = new BehaviorSubject<TrainingComplete | null>(null);
+  private trainingError = new BehaviorSubject<TrainingError | null>(null);
   
   // Production server URL based on the documentation
   private serverUrl = environment.websocketUrl;
@@ -71,6 +88,18 @@ export class TrainingWebSocketService implements OnDestroy {
       this.logger.log('Training update received via WebSocket:', data);
       this.trainingUpdates.next(data);
     });
+
+    // Training completion handler
+    this.socket.on('training_complete', (data: TrainingComplete) => {
+      this.logger.log('Training completed via WebSocket:', data);
+      this.trainingComplete.next(data);
+    });
+
+    // Training error handler
+    this.socket.on('training_error', (data: TrainingError) => {
+      this.logger.error('Training error received via WebSocket:', data);
+      this.trainingError.next(data);
+    });
   }
 
   // Observable for connection status
@@ -83,12 +112,48 @@ export class TrainingWebSocketService implements OnDestroy {
     return this.trainingUpdates.asObservable();
   }
 
+  // Observable for training completion
+  getTrainingComplete(): Observable<TrainingComplete | null> {
+    return this.trainingComplete.asObservable();
+  }
+
+  // Observable for training errors
+  getTrainingError(): Observable<TrainingError | null> {
+    return this.trainingError.asObservable();
+  }
+
   // Filter training updates for a specific job ID
   getTrainingUpdatesForJob(jobId: string): Observable<TrainingUpdate | null> {
     return new Observable<TrainingUpdate | null>(observer => {
       const subscription = this.trainingUpdates.subscribe(update => {
         if (!update || update.job_id === jobId) {
           observer.next(update);
+        }
+      });
+      
+      return () => subscription.unsubscribe();
+    });
+  }
+
+  // Filter training completion for a specific job ID
+  getTrainingCompleteForJob(jobId: string): Observable<TrainingComplete | null> {
+    return new Observable<TrainingComplete | null>(observer => {
+      const subscription = this.trainingComplete.subscribe(complete => {
+        if (!complete || complete.job_id === jobId) {
+          observer.next(complete);
+        }
+      });
+      
+      return () => subscription.unsubscribe();
+    });
+  }
+
+  // Filter training errors for a specific job ID
+  getTrainingErrorForJob(jobId: string): Observable<TrainingError | null> {
+    return new Observable<TrainingError | null>(observer => {
+      const subscription = this.trainingError.subscribe(error => {
+        if (!error || error.job_id === jobId) {
+          observer.next(error);
         }
       });
       

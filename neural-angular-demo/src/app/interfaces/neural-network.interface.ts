@@ -11,11 +11,26 @@ export interface TrainingUpdate {
   network_id: string;
   epoch: number;
   total_epochs: number;
-  accuracy: number;
+  accuracy: number | null;
   elapsed_time: number;
   progress: number;
-  correct: number;
-  total: number;
+  correct?: number;
+  total?: number;
+}
+
+export interface TrainingComplete {
+  job_id: string;
+  network_id: string;
+  status: string;
+  accuracy: number;
+  message: string;
+}
+
+export interface TrainingError {
+  job_id: string;
+  network_id: string;
+  status: string;
+  error: string;
 }
 
 export interface NetworkConfig {

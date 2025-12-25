@@ -6,6 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { NeuralNetworkService } from '../../services/neural-network.service';
 import { AppStateService } from '../../services/app-state.service';
 import { LoggerService } from '../../services/logger.service';
+import { TrainingWebSocketService } from '../../services/websocket/training-websocket.service';
 import { TrainingProgressComponent } from '../training-progress/training-progress.component';
 import { TrainingConfig, TrainingUpdate } from '../../interfaces/neural-network.interface';
 
@@ -18,7 +19,7 @@ import { TrainingConfig, TrainingUpdate } from '../../interfaces/neural-network.
 })
 export class NetworkTrainingComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private trainingInterval?: ReturnType<typeof setInterval>;
+  private currentJobId: string | null = null;
   
   networkId = '';
   trainingConfig: TrainingConfig = {
@@ -39,7 +40,8 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
     private router: Router,
     private neuralNetworkService: NeuralNetworkService,
     private appState: AppStateService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private websocketService: TrainingWebSocketService
   ) {}
 
   ngOnInit(): void {
@@ -47,12 +49,36 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
     this.networkId = this.appState.networkId;
     this.trainingConfig = { ...this.appState.trainingConfig };
     this.finalAccuracy = this.appState.finalAccuracy;
+
+    // Subscribe to training updates
+    this.websocketService.getTrainingUpdates()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(update => {
+        if (update && this.currentJobId && update.job_id === this.currentJobId) {
+          this.handleTrainingUpdate(update);
+        }
+      });
+
+    // Subscribe to training completion
+    this.websocketService.getTrainingComplete()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(completion => {
+        if (completion && this.currentJobId && completion.job_id === this.currentJobId) {
+          this.handleTrainingComplete(completion);
+        }
+      });
+
+    // Subscribe to training errors
+    this.websocketService.getTrainingError()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(error => {
+        if (error && this.currentJobId && error.job_id === this.currentJobId) {
+          this.handleTrainingError(error);
+        }
+      });
   }
 
   ngOnDestroy(): void {
-    if (this.trainingInterval) {
-      clearInterval(this.trainingInterval);
-    }
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -69,6 +95,9 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
 
     this.trainingLoading = true;
     this.error = null;
+    this.finalAccuracy = null;
+    this.currentTraining = null;
+    this.trainingProgress = 0;
     
     const config = {
       epochs: this.trainingConfig.epochs,
@@ -80,10 +109,11 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.currentJobId = response.job_id;
           this.trainingStarted = true;
           this.isTraining = true;
           this.trainingLoading = false;
-          this.monitorTrainingProgress();
+          this.logger.log('Training started with job ID:', this.currentJobId);
         },
         error: (error) => {
           this.logger.error('Error starting training:', error);
@@ -93,50 +123,42 @@ export class NetworkTrainingComponent implements OnInit, OnDestroy {
       });
   }
 
-  private monitorTrainingProgress(): void {
-    // Simulate training progress for demo purposes
-    let progress = 0;
-    let currentEpoch = 1;
+  private handleTrainingUpdate(update: TrainingUpdate): void {
+    this.logger.log('Handling training update:', update);
+    this.currentTraining = update;
+    this.trainingProgress = update.progress;
     
-    this.trainingInterval = setInterval(() => {
-      const progressPerEpoch = 100 / this.trainingConfig.epochs;
-      progress = Math.min(currentEpoch * progressPerEpoch, 100);
-      this.trainingProgress = progress;
-      
-      // Calculate improving accuracy
-      const baseAccuracy = 0.8369;
-      const accuracyGain = (0.92 - baseAccuracy) * ((currentEpoch - 1) / this.trainingConfig.epochs);
-      const currentAccuracy = baseAccuracy + accuracyGain;
-      
-      this.currentTraining = {
-        job_id: "training-job",
-        network_id: this.networkId,
-        epoch: currentEpoch,
-        total_epochs: this.trainingConfig.epochs,
-        accuracy: currentAccuracy,
-        elapsed_time: 2.65 + (currentEpoch - 1) * 0.5,
-        progress: progress,
-        correct: Math.floor(10000 * currentAccuracy),
-        total: 10000
-      };
-      
-      if (currentEpoch >= this.trainingConfig.epochs) {
-        if (this.trainingInterval) {
-          clearInterval(this.trainingInterval);
-        }
-        this.completeTraining();
-      } else {
-        currentEpoch++;
-      }
-    }, 1000);
+    // DO NOT set isTraining = false here!
+    // Wait for the training_complete event
   }
 
-  private completeTraining(): void {
-    this.trainingStarted = false;
+  private handleTrainingComplete(completion: any): void {
+    this.logger.log('Training completed:', completion);
+    
+    // Now we can safely mark training as complete
     this.isTraining = false;
-    this.finalAccuracy = this.currentTraining?.accuracy || 0;
+    this.trainingStarted = false;
+    this.finalAccuracy = completion.accuracy;
+    this.trainingProgress = 100;
+    
+    // Update app state
     this.appState.setTrainingComplete(true);
     this.appState.setFinalAccuracy(this.finalAccuracy);
+    
+    // Clear the job ID
+    this.currentJobId = null;
+  }
+
+  private handleTrainingError(error: any): void {
+    this.logger.error('Training error:', error);
+    
+    // Mark training as stopped
+    this.isTraining = false;
+    this.trainingStarted = false;
+    this.error = error.error || 'Training failed. Please try again.';
+    
+    // Clear the job ID
+    this.currentJobId = null;
   }
 
   onContinueToTest(): void {

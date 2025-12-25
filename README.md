@@ -94,7 +94,9 @@ This frontend application requires a separate backend API server for neural netw
 
 #### Required Backend Endpoints
 
-The backend **must** implement these 5 endpoints:
+The backend **must** implement these endpoints:
+
+**REST API Endpoints:**
 
 1. **POST** `/api/networks`
 
@@ -118,9 +120,24 @@ The backend **must** implement these 5 endpoints:
    - Get a misclassified MNIST example
    - Returns: Example image data and prediction
 
-5. **WebSocket** `training_update` event (Socket.IO)
-   - Real-time training progress updates
-   - Payload: `{ job_id, network_id, epoch, accuracy, progress, elapsed_time }`
+**WebSocket Events (Socket.IO):**
+
+5. **`training_update`** event
+
+   - Real-time training progress updates (per epoch)
+   - Payload: `{ job_id, network_id, epoch, total_epochs, accuracy, progress, elapsed_time }`
+
+6. **`training_complete`** event ✨ **Required**
+
+   - Signals actual training completion (after all epochs and final evaluation)
+   - Payload: `{ job_id, network_id, status, accuracy, message }`
+   - **Critical**: Frontend waits for this event before marking training as complete
+
+7. **`training_error`** event
+   - Signals training failure
+   - Payload: `{ job_id, network_id, status, error }`
+
+> **⚠️ Important**: The frontend does NOT assume training is complete after receiving the last epoch update. It waits for the explicit `training_complete` event to ensure accurate final results.
 
 #### Configuration
 
