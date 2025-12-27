@@ -1,27 +1,47 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { NetworkConfigComponent } from './network-config.component';
 import { NeuralNetworkService } from '../../services/neural-network.service';
+import { AppStateService } from '../../services/app-state.service';
+import { LoggerService } from '../../services/logger.service';
+import { NetworkCreateResponse } from '../../interfaces/neural-network.interface';
 
 describe('NetworkConfigComponent', () => {
   let component: NetworkConfigComponent;
   let fixture: ComponentFixture<NetworkConfigComponent>;
   let neuralNetworkServiceSpy: jasmine.SpyObj<NeuralNetworkService>;
+  let routerSpy: jasmine.SpyObj<Router>;
+  let appStateSpy: jasmine.SpyObj<AppStateService>;
+  let loggerSpy: jasmine.SpyObj<LoggerService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('NeuralNetworkService', ['createNetwork']);
+    const networkSpy = jasmine.createSpyObj('NeuralNetworkService', ['createNetwork']);
+    const routerSpyObj = jasmine.createSpyObj('Router', ['navigate']);
+    const appStateSpyObj = jasmine.createSpyObj('AppStateService', ['setNetworkId', 'setActiveSection', 'setNetworkConfig', 'networkConfig']);
+    const loggerSpyObj = jasmine.createSpyObj('LoggerService', ['error']);
+    
+    Object.defineProperty(appStateSpyObj, 'networkConfig', {
+      get: () => ({ hiddenLayer1: 128, hiddenLayer2: 64, useSecondLayer: true, layerSizes: [784, 128, 64, 10] })
+    });
     
     await TestBed.configureTestingModule({
       imports: [NetworkConfigComponent, FormsModule, HttpClientTestingModule],
       providers: [
-        { provide: NeuralNetworkService, useValue: spy }
+        { provide: NeuralNetworkService, useValue: networkSpy },
+        { provide: Router, useValue: routerSpyObj },
+        { provide: AppStateService, useValue: appStateSpyObj },
+        { provide: LoggerService, useValue: loggerSpyObj }
       ]
     }).compileComponents();
 
     neuralNetworkServiceSpy = TestBed.inject(NeuralNetworkService) as jasmine.SpyObj<NeuralNetworkService>;
+    routerSpy = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    appStateSpy = TestBed.inject(AppStateService) as jasmine.SpyObj<AppStateService>;
+    loggerSpy = TestBed.inject(LoggerService) as jasmine.SpyObj<LoggerService>;
     fixture = TestBed.createComponent(NetworkConfigComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -44,20 +64,23 @@ describe('NetworkConfigComponent', () => {
     component.onConfigChange();
     
     expect(component.config.layerSizes).toEqual([784, 256, 10]);
+    expect(appStateSpy.setNetworkConfig).toHaveBeenCalledWith(component.config);
   });
 
   it('should create network successfully', () => {
-    const mockResponse = { network_id: 'test-network-id' };
+    const mockResponse: NetworkCreateResponse = { 
+      network_id: 'test-network-id',
+      layer_sizes: [784, 128, 64, 10],
+      message: 'Network created successfully'
+    };
     neuralNetworkServiceSpy.createNetwork.and.returnValue(of(mockResponse));
-    
-    spyOn(component.networkCreated, 'emit');
-    spyOn(component.continueToTrain, 'emit');
     
     component.createNetwork();
     
     expect(component.loading).toBe(false);
-    expect(component.networkCreated.emit).toHaveBeenCalledWith('test-network-id');
-    expect(component.continueToTrain.emit).toHaveBeenCalled();
+    expect(appStateSpy.setNetworkId).toHaveBeenCalledWith('test-network-id');
+    expect(appStateSpy.setActiveSection).toHaveBeenCalledWith('train');
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/train']);
     expect(component.error).toBeNull();
   });
 
@@ -68,13 +91,12 @@ describe('NetworkConfigComponent', () => {
     
     expect(component.loading).toBe(false);
     expect(component.error).toBe('Failed to create network. Please try again.');
+    expect(loggerSpy.error).toHaveBeenCalled();
   });
 
-  it('should emit config change when configuration is updated', () => {
-    spyOn(component.configChange, 'emit');
-    
+  it('should update app state when configuration is updated', () => {
     component.onConfigChange();
     
-    expect(component.configChange.emit).toHaveBeenCalledWith(component.config);
+    expect(appStateSpy.setNetworkConfig).toHaveBeenCalledWith(component.config);
   });
 });

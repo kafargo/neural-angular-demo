@@ -1,30 +1,43 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 
 import { NetworkTestComponent } from './network-test.component';
 import { NeuralNetworkService } from '../../services/neural-network.service';
+import { AppStateService } from '../../services/app-state.service';
+import { LoggerService } from '../../services/logger.service';
 import { NetworkExample } from '../../interfaces/neural-network.interface';
 
 describe('NetworkTestComponent', () => {
   let component: NetworkTestComponent;
   let fixture: ComponentFixture<NetworkTestComponent>;
   let neuralNetworkServiceSpy: jasmine.SpyObj<NeuralNetworkService>;
+  let appStateSpy: jasmine.SpyObj<AppStateService>;
+  let loggerSpy: jasmine.SpyObj<LoggerService>;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj('NeuralNetworkService', ['getExamples']);
+    const networkSpy = jasmine.createSpyObj('NeuralNetworkService', ['getExamples']);
+    const appStateSpyObj = jasmine.createSpyObj('AppStateService', ['networkId']);
+    const loggerSpyObj = jasmine.createSpyObj('LoggerService', ['error', 'log']);
+    
+    Object.defineProperty(appStateSpyObj, 'networkId', {
+      get: () => 'test-network-id'
+    });
     
     await TestBed.configureTestingModule({
       imports: [NetworkTestComponent, HttpClientTestingModule],
       providers: [
-        { provide: NeuralNetworkService, useValue: spy }
+        { provide: NeuralNetworkService, useValue: networkSpy },
+        { provide: AppStateService, useValue: appStateSpyObj },
+        { provide: LoggerService, useValue: loggerSpyObj }
       ]
     }).compileComponents();
 
     neuralNetworkServiceSpy = TestBed.inject(NeuralNetworkService) as jasmine.SpyObj<NeuralNetworkService>;
+    appStateSpy = TestBed.inject(AppStateService) as jasmine.SpyObj<AppStateService>;
+    loggerSpy = TestBed.inject(LoggerService) as jasmine.SpyObj<LoggerService>;
     fixture = TestBed.createComponent(NetworkTestComponent);
     component = fixture.componentInstance;
-    component.networkId = 'test-network-id';
     fixture.detectChanges();
   });
 
@@ -32,7 +45,7 @@ describe('NetworkTestComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load successful example', () => {
+  it('should load successful example', fakeAsync(() => {
     const mockExample: NetworkExample = {
       image_data: 'test-data',
       actual_digit: 7,
@@ -44,6 +57,7 @@ describe('NetworkTestComponent', () => {
     neuralNetworkServiceSpy.getExamples.and.returnValue(of(mockExample));
     
     component.loadSuccessfulExample();
+    tick();
     
     expect(component.currentExample).toEqual(jasmine.objectContaining({
       actual_digit: 7,
@@ -51,9 +65,9 @@ describe('NetworkTestComponent', () => {
       correct: true
     }));
     expect(component.loadingExample).toBe(false);
-  });
+  }));
 
-  it('should load unsuccessful example', () => {
+  it('should load unsuccessful example', fakeAsync(() => {
     const mockExample: NetworkExample = {
       image_data: 'test-data',
       actual_digit: 7,
@@ -65,6 +79,7 @@ describe('NetworkTestComponent', () => {
     neuralNetworkServiceSpy.getExamples.and.returnValue(of(mockExample));
     
     component.loadUnsuccessfulExample();
+    tick();
     
     expect(component.currentExample).toEqual(jasmine.objectContaining({
       actual_digit: 7,
@@ -72,27 +87,29 @@ describe('NetworkTestComponent', () => {
       correct: false
     }));
     expect(component.loadingExample).toBe(false);
-  });
+  }));
 
-  it('should handle successful example loading error with fallback', () => {
+  it('should handle successful example loading error with fallback', fakeAsync(() => {
     neuralNetworkServiceSpy.getExamples.and.returnValue(throwError(() => new Error('API Error')));
     
     component.loadSuccessfulExample();
+    tick();
     
     expect(component.currentExample).toBeDefined();
     expect(component.currentExample?.correct).toBe(true);
     expect(component.loadingExample).toBe(false);
-  });
+  }));
 
-  it('should handle unsuccessful example loading error with fallback', () => {
+  it('should handle unsuccessful example loading error with fallback', fakeAsync(() => {
     neuralNetworkServiceSpy.getExamples.and.returnValue(throwError(() => new Error('API Error')));
     
     component.loadUnsuccessfulExample();
+    tick();
     
     expect(component.currentExample).toBeDefined();
     expect(component.currentExample?.correct).toBe(false);
     expect(component.loadingExample).toBe(false);
-  });
+  }));
 
   it('should set error when no network ID for successful example', () => {
     component.networkId = '';
@@ -110,21 +127,20 @@ describe('NetworkTestComponent', () => {
     expect(component.error).toBe('No trained network available');
   });
 
-  it('should generate examples and show them', () => {
-    const mockExamples: NetworkExample[] = [
-      {
-        image_data: 'test-data-1',
-        actual_digit: 1,
-        predicted_digit: 1,
-        correct: true,
-        network_output: [0.1, 0.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-      }
-    ];
+  it('should generate examples and show them', fakeAsync(() => {
+    const mockExample: NetworkExample = {
+      image_data: 'test-data-1',
+      actual_digit: 1,
+      predicted_digit: 1,
+      correct: true,
+      network_output: [0.1, 0.9, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    };
     
-    neuralNetworkServiceSpy.getExamples.and.returnValue(of(mockExamples));
+    neuralNetworkServiceSpy.getExamples.and.returnValue(of(mockExample));
     
     component.generateExamples();
+    tick();
     
     expect(component.showExamples).toBe(true);
-  });
+  }));
 });
