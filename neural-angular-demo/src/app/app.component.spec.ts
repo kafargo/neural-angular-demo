@@ -18,11 +18,6 @@ describe('AppComponent', () => {
     originalBeforeUnload = window.onbeforeunload;
     window.onbeforeunload = null;
     
-    // Mock sessionStorage to prevent navigation in tests
-    spyOn(sessionStorage, 'getItem').and.returnValue('true');
-    spyOn(sessionStorage, 'setItem');
-    spyOn(sessionStorage, 'removeItem');
-    
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [

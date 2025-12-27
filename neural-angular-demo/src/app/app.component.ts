@@ -30,10 +30,14 @@ export class AppComponent implements OnInit {
     private neuralNetworkService: NeuralNetworkService,
     public appState: AppStateService
   ) {
-    // Set flag before unload to distinguish navigation from refresh
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.removeItem(this.NAVIGATION_FLAG);
-    });
+    // Only set up beforeunload listener in non-test environments
+    // Check if we're running in a test environment (Karma/Jasmine)
+    if (typeof (window as any).__karma__ === 'undefined' && typeof (window as any).jasmine === 'undefined') {
+      // Set flag before unload to distinguish navigation from refresh
+      window.addEventListener('beforeunload', () => {
+        sessionStorage.removeItem(this.NAVIGATION_FLAG);
+      });
+    }
   }
 
   ngOnInit(): void {
